@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Death Angels - Dark War Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050508;
+            --card-bg: #1a1a24;
+            --accent-gold: #d4af37;
+            --accent-silver: #c0c0c0;
+            --text-light: #e8e8e8;
+            --text-dim: #a0a0a0;
+            --danger: #dc3545;
+            --success: #28a745;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--card-bg) 100%);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-gold);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-silver) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .admin-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .admin-btn, .lang-btn, .logout-btn {
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .admin-btn:hover, .lang-btn:hover {
+            background: var(--accent-gold);
+            color: var(--darker-bg);
+        }
+
+        .logout-btn {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: var(--danger);
+            color: var(--danger);
+            display: none;
+        }
+
+        body.admin-mode .logout-btn {
+            display: block;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .lang-selector {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+        }
+
+        .lang-select {
+            background: var(--card-bg);
+            border: 1px solid var(--accent-gold);
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .nav {
+            background: var(--card-bg);
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(192, 192, 192, 0.1) 100%);
+            border: 1px solid var(--accent-gold);
+            color: var(--text-light);
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-btn:hover {
+            border-color: var(--accent-silver);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, rgba(212, 175, 55, 0.7) 100%);
+            color: var(--darker-bg);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .search-bar {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--accent-gold);
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--darker-bg);
+            border: 1px solid var(--accent-silver);
+            color: var(--text-light);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(192, 192, 192, 0.1) 100%);
+            border: 1px solid var(--accent-gold);
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-gold);
+            color: var(--darker-bg);
+        }
+
+        .buildings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .building-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .building-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+        }
+
+        .building-image {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            background: var(--darker-bg);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .building-name {
+            color: var(--accent-gold);
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .building-level {
+            display: inline-block;
+            background: var(--accent-gold);
+            color: var(--darker-bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .building-category {
+            display: inline-block;
+            background: var(--accent-silver);
+            color: var(--darker-bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .building-tags {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--accent-gold);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            border: 1px solid var(--accent-gold);
+        }
+
+        .tag-input {
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        body.admin-mode .tag-input {
+            display: block;
+        }
+
+        .building-description {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tactical-block {
+            background: var(--darker-bg);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .block-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .block-image-container {
+            width: 150px;
+            height: 150px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border: 2px solid var(--accent-gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .block-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .block-content {
+            flex: 1;
+        }
+
+        .tactical-block h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .tactical-item {
+            background: rgba(212, 175, 55, 0.05);
+            border-left: 3px solid var(--accent-gold);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+
+        .tactical-item h4 {
+            color: var(--accent-silver);
+            margin-bottom: 0.5rem;
+        }
+
+        .add-item-btn {
+            width: 100%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(192, 192, 192, 0.2) 100%);
+            border: 2px dashed var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        body.admin-mode .add-item-btn {
+            display: block;
+        }
+
+        .add-item-btn:hover {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(192, 192, 192, 0.3) 100%);
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            float: right;
+            display: none;
+        }
+
+        body.admin-mode .delete-btn {
+            display: inline-block;
+        }
+
+        .delete-block-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+
+        body.admin-mode .delete-block-btn {
+            display: block;
+        }
+
+        .image-upload-hint {
+            display: none;
+            text-align: center;
+            color: var(--accent-gold);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        body.admin-mode .image-upload-hint {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 2px solid var(--accent-gold);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+            cursor: pointer;
+        }
+
+        .admin-panel {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 2px solid var(--accent-gold);
+        }
+
+        .admin-panel input, .admin-panel textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--darker-bg);
+            border: 1px solid var(--accent-silver);
+            color: var(--text-light);
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .admin-panel button {
+            background: var(--accent-gold);
+            color: var(--darker-bg);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .admin-panel button:hover {
+            background: var(--accent-silver);
+        }
+
+        .image-upload-zone {
+            border: 2px dashed var(--accent-gold);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .image-upload-zone:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .editable {
+            outline: none;
+        }
+
+        body.admin-mode .editable {
+            cursor: text;
+            border-bottom: 1px dashed var(--accent-gold);
+        }
+
+        .editable:focus {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 2px;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .buildings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav {
+                flex-direction: column;
+            }
+
+            .block-header {
+                flex-direction: column;
+            }
+
+            .block-image-container {
+                width: 100%;
+            }
+
+            .admin-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 1rem;
+            }
+
+            .lang-selector {
+                position: static;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="lang-selector">
+            <select class="lang-select" id="languageSelect" onchange="changeLanguage()">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="ar">🇸🇦 العربية</option>
+            </select>
+        </div>
+        <div class="admin-controls">
+            <button class="admin-btn" id="adminBtn" onclick="toggleAdminLogin()">🔐 Admin</button>
+            <button class="logout-btn" onclick="logoutAdmin()">🚪 Déconnexion</button>
+        </div>
+        <h1>⚔️ DEATH ANGELS ⚔️</h1>
+        <p data-translate="subtitle">Guide Complet Dark War</p>
+    </div>
+
+    <nav class="nav">
+        <button class="nav-btn active" data-section="buildings" data-translate="nav-buildings">🏰 Bâtiments</button>
+        <button class="nav-btn" data-section="movements" data-translate="nav-movements">🗺️ Mouvements de Base</button>
+        <button class="nav-btn" data-section="attack" data-translate="nav-attack">⚔️ Attaque</button>
+        <button class="nav-btn" data-section="defense" data-translate="nav-defense">🛡️ Défense</button>
+        <button class="nav-btn" data-section="events" data-translate="nav-events">🎯 Events</button>
+        <button class="nav-btn" data-section="tips" data-translate="nav-tips">💡 Astuces</button>
+    </nav>
+
+    <div class="container">
+        <!-- BUILDINGS SECTION -->
+        <section id="buildings" class="section active">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 Rechercher un bâtiment..." data-translate-placeholder="search-placeholder">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-category="all" data-translate="filter-all">Tous</button>
+                    <button class="filter-btn" data-category="principal" data-translate="filter-principal">Principaux</button>
+                    <button class="filter-btn" data-category="militaire" data-translate="filter-military">Militaire</button>
+                    <button class="filter-btn" data-category="ressources" data-translate="filter-resources">Ressources</button>
+                    <button class="filter-btn" data-category="defense" data-translate="filter-defense">Défense</button>
+                    <button class="filter-btn" data-category="soin" data-translate="filter-heal">Soin</button>
+                    <button class="filter-btn" data-category="alliance" data-translate="filter-alliance">Alliance</button>
+                </div>
+            </div>
+            <div id="buildingsGrid" class="buildings-grid"></div>
+            <button class="add-item-btn" onclick="addNewBuilding()">+ <span data-translate="add-building">Ajouter un bâtiment</span></button>
+        </section>
+
+        <!-- MOVEMENTS SECTION -->
+        <section id="movements" class="section">
+            <div class="card">
+                <h2>
+                    <span data-translate="movements-title">🗺️ Mouvements de Base</span>
+                    <button class="add-item-btn" onclick="addBlock('movements')" style="width: auto; padding: 0.5rem 1rem;">+ <span data-translate="new-block">Nouveau Bloc</span></button>
+                </h2>
+                <div id="movementsContainer"></div>
+            </div>
+        </section>
+
+        <!-- ATTACK SECTION -->
+        <section id="attack" class="section">
+            <div class="card">
+                <h2>
+                    <span data-translate="attack-title">⚔️ Stratégies d'Attaque</span>
+                    <button class="add-item-btn" onclick="addBlock('attacks')" style="width: auto; padding: 0.5rem 1rem;">+ <span data-translate="new-block">Nouveau Bloc</span></button>
+                </h2>
+                <div id="attacksContainer"></div>
+            </div>
+        </section>
+
+        <!-- DEFENSE SECTION -->
+        <section id="defense" class="section">
+            <div class="card">
+                <h2>
+                    <span data-translate="defense-title">🛡️ Stratégies de Défense</span>
+                    <button class="add-item-btn" onclick="addBlock('defenses')" style="width: auto; padding: 0.5rem 1rem;">+ <span data-translate="new-block">Nouveau Bloc</span></button>
+                </h2>
+                <div id="defensesContainer"></div>
+            </div>
+        </section>
+
+        <!-- EVENTS SECTION -->
+        <section id="events" class="section">
+            <div class="card">
+                <h2>
+                    <span data-translate="events-title">🎯 Events & Événements</span>
+                    <button class="add-item-btn" onclick="addBlock('events')" style="width: auto; padding: 0.5rem 1rem;">+ <span data-translate="new-block">Nouveau Bloc</span></button>
+                </h2>
+                <div id="eventsContainer"></div>
+            </div>
+        </section>
+
+        <!-- TIPS SECTION -->
+        <section id="tips" class="section">
+            <div class="card">
+                <h2>
+                    <span data-translate="tips-title">💡 Astuces & Conseils</span>
+                    <button class="add-item-btn" onclick="addBlock('tips')" style="width: auto; padding: 0.5rem 1rem;">+ <span data-translate="new-block">Nouveau Bloc</span></button>
+                </h2>
+                <div id="tipsContainer"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+            <h2 style="color: var(--accent-gold);" data-translate="admin-login">Connexion Admin</h2>
+            <div class="admin-panel">
+                <input type="password" id="adminPassword" placeholder="Mot de passe admin" data-translate-placeholder="admin-password">
+                <button onclick="loginAdmin()" data-translate="connect">Se connecter</button>
+                <p id="loginError" style="color: var(--danger); margin-top: 1rem;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Building Detail Modal -->
+    <div id="buildingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeBuildingModal()">&times;</span>
+            <div id="buildingDetail"></div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "deathangelsvip4";
+        let isAdminMode = false;
+        let currentFilter = 'all';
+        let currentLanguage = 'fr';
+
+        // Translations dictionary
+        const translations = {
+            fr: {
+                'subtitle': 'Guide Complet Dark War',
+                'nav-buildings': '🏰 Bâtiments',
+                'nav-movements': '🗺️ Mouvements de Base',
+                'nav-attack': '⚔️ Attaque',
+                'nav-defense': '🛡️ Défense',
+                'nav-events': '🎯 Events',
+                'search-placeholder': '🔍 Rechercher un bâtiment...',
+                'filter-all': 'Tous',
+                'filter-principal': 'Principaux',
+                'filter-military': 'Militaire',
+                'filter-resources': 'Ressources',
+                'filter-defense': 'Défense',
+                'filter-heal': 'Soin',
+                'filter-alliance': 'Alliance',
+                'add-building': 'Ajouter un bâtiment',
+                'new-block': 'Nouveau Bloc',
+                'movements-title': '🗺️ Mouvements de Base',
+                'attack-title': '⚔️ Stratégies d\'Attaque',
+                'defense-title': '🛡️ Stratégies de Défense',
+                'events-title': '🎯 Events & Événements',
+                'tips-title': '💡 Astuces & Conseils',
+                'nav-tips': '💡 Astuces',
+                'admin-login': 'Connexion Admin',
+                'admin-password': 'Mot de passe admin',
+                'connect': 'Se connecter',
+                'level': 'Niveau',
+                'utility': 'Utilité',
+                'add-entry': 'Ajouter une entrée',
+                'click-image': 'Cliquer pour ajouter/changer l\'image'
+            },
+            en: {
+                'subtitle': 'Complete Dark War Guide',
+                'nav-buildings': '🏰 Buildings',
+                'nav-movements': '🗺️ Base Movements',
+                'nav-attack': '⚔️ Attack',
+                'nav-defense': '🛡️ Defense',
+                'nav-events': '🎯 Events',
+                'search-placeholder': '🔍 Search a building...',
+                'filter-all': 'All',
+                'filter-principal': 'Main',
+                'filter-military': 'Military',
+                'filter-resources': 'Resources',
+                'filter-defense': 'Defense',
+                'filter-heal': 'Healing',
+                'filter-alliance': 'Alliance',
+                'add-building': 'Add a building',
+                'new-block': 'New Block',
+                'movements-title': '🗺️ Base Movements',
+                'attack-title': '⚔️ Attack Strategies',
+                'defense-title': '🛡️ Defense Strategies',
+                'events-title': '🎯 Events',
+                'tips-title': '💡 Tips & Advice',
+                'nav-tips': '💡 Tips',
+                'admin-login': 'Admin Login',
+                'admin-password': 'Admin password',
+                'connect': 'Connect',
+                'level': 'Level',
+                'utility': 'Utility',
+                'add-entry': 'Add entry',
+                'click-image': 'Click to add/change image'
+            },
+            es: {
+                'subtitle': 'Guía Completa Dark War',
+                'nav-buildings': '🏰 Edificios',
+                'nav-movements': '🗺️ Movimientos Base',
+                'nav-attack': '⚔️ Ataque',
+                'nav-defense': '🛡️ Defensa',
+                'nav-events': '🎯 Eventos',
+                'search-placeholder': '🔍 Buscar un edificio...',
+                'filter-all': 'Todos',
+                'filter-principal': 'Principales',
+                'filter-military': 'Militar',
+                'filter-resources': 'Recursos',
+                'filter-defense': 'Defensa',
+                'filter-heal': 'Curación',
+                'filter-alliance': 'Alianza',
+                'add-building': 'Añadir edificio',
+                'new-block': 'Nuevo Bloque',
+                'movements-title': '🗺️ Movimientos Base',
+                'attack-title': '⚔️ Estrategias de Ataque',
+                'defense-title': '🛡️ Estrategias de Defensa',
+                'events-title': '🎯 Eventos',
+                'tips-title': '💡 Consejos y Trucos',
+                'nav-tips': '💡 Consejos',
+                'admin-login': 'Inicio de sesión Admin',
+                'admin-password': 'Contraseña admin',
+                'connect': 'Conectar',
+                'level': 'Nivel',
+                'utility': 'Utilidad',
+                'add-entry': 'Añadir entrada',
+                'click-image': 'Clic para añadir/cambiar imagen'
+            },
+            de: {
+                'subtitle': 'Vollständiger Dark War Leitfaden',
+                'nav-buildings': '🏰 Gebäude',
+                'nav-movements': '🗺️ Basis-Bewegungen',
+                'nav-attack': '⚔️ Angriff',
+                'nav-defense': '🛡️ Verteidigung',
+                'nav-events': '🎯 Events',
+                'search-placeholder': '🔍 Gebäude suchen...',
+                'filter-all': 'Alle',
+                'filter-principal': 'Haupt',
+                'filter-military': 'Militär',
+                'filter-resources': 'Ressourcen',
+                'filter-defense': 'Verteidigung',
+                'filter-heal': 'Heilung',
+                'filter-alliance': 'Allianz',
+                'add-building': 'Gebäude hinzufügen',
+                'new-block': 'Neuer Block',
+                'movements-title': '🗺️ Basis-Bewegungen',
+                'attack-title': '⚔️ Angriffsstrategien',
+                'defense-title': '🛡️ Verteidigungsstrategien',
+                'events-title': '🎯 Events',
+                'tips-title': '💡 Tipps & Ratschläge',
+                'nav-tips': '💡 Tipps',
+                'admin-login': 'Admin-Anmeldung',
+                'admin-password': 'Admin-Passwort',
+                'connect': 'Verbinden',
+                'level': 'Stufe',
+                'utility': 'Nutzen',
+                'add-entry': 'Eintrag hinzufügen',
+                'click-image': 'Klicken um Bild hinzuzufügen/zu ändern'
+            }
+        };
+
+        // Translation function
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            localStorage.setItem('selectedLanguage', currentLanguage);
+            
+            // Translate all elements with data-translate attribute
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+
+            // Translate placeholders
+            document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-translate-placeholder');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.placeholder = translations[currentLanguage][key];
+                }
+            });
+        }
+
+        // Initialize with ALL buildings data
+        let gameData = JSON.parse(localStorage.getItem('deathAngelsData')) || {
+            buildings: {
+                "tour": { name: "Tour (PC)", description: "Centre de commandement principal. Permet de débloquer de nouvelles fonctionnalités au fil des niveaux et des nouveaux bâtiments", utility: "Déblocage de fonctionnalités, nouveaux bâtiments, priorité absolue d'amélioration", level: 0, category: "principal", image: "", tags: ["prioritaire", "central"] },
+                "centrale_electrique": { name: "Centrale électrique", description: "Fournit l'énergie nécessaire au fonctionnement de la base", utility: "Production d'électricité, requis pour certains bâtiments", level: 15, category: "ressources", image: "", tags: ["énergie", "production"] },
+                "hall_construction": { name: "Hall de Construction", description: "Accélère la construction de tous tes bâtiments", utility: "Plus tu l'améliores, plus tout se construit vite", level: 10, category: "principal", image: "", tags: ["construction", "vitesse"] },
+                "camp_guerriers": { name: "Camp de Guerriers", description: "Bâtiment où tu crées tes soldats d'infanterie", utility: "Monter son niveau débloque des troupes plus puissantes", level: 15, category: "militaire", image: "", tags: ["infanterie", "formation"] },
+                "camp_tireurs": { name: "Camp de Tireurs", description: "Bâtiment où tu crées tes archers", utility: "Entraînement des archers. Plus le bâtiment est haut niveau, plus tu peux en entraîner à la fois", level: 15, category: "militaire", image: "", tags: ["archers", "distance"] },
+                "camp_cavalerie": { name: "Camp de Cavalerie", description: "Bâtiment où tu crées tes cavaliers", utility: "Formation de la cavalerie. Unités rapides et puissantes", level: 15, category: "militaire", image: "", tags: ["cavalerie", "vitesse"] },
+                "garage_modifie": { name: "Garage Modifié", description: "Sert à améliorer tes véhicules", utility: "Augmente statistiques des véhicules (attaque, défense, santé, vitesse)", level: 1, category: "militaire", image: "", tags: ["véhicules", "amélioration"] },
+                "institut": { name: "Institut", description: "Centre de recherche qui améliore toute ta base", utility: "Débloques des bonus pour troupes, production et défense. Améliorations permanentes", level: 0, category: "principal", image: "", tags: ["recherche", "permanent"] },
+                "hopital": { name: "Hôpital", description: "Soigne tes troupes blessées après les combats", utility: "Répare tes soldats au lieu de les perdre. Évite de reformer des troupes", level: 15, category: "soin", image: "", tags: ["soin", "récupération"] },
+                "arene": { name: "Arène", description: "Endroit où tu peux affronter d'autres joueurs avec ton équipe de héros", utility: "Combats PvP. Récompenses selon classement. Ressources quotidiennes", level: 12, category: "combat", image: "", tags: ["pvp", "récompenses"] },
+                "radar": { name: "Radar", description: "Repère les menaces et activités autour de ta base", utility: "Détection des mouvements ennemis. Trouve opportunités et ressources", level: 13, category: "defense", image: "", tags: ["surveillance", "détection"] },
+                "entrepot": { name: "Entrepôt", description: "Protège tes ressources contre les attaques", utility: "Ressources protégées ne peuvent pas être volées. Monte-le régulièrement", level: 12, category: "ressources", image: "", tags: ["protection", "stockage"] },
+                "station_approvisionnement": { name: "Station d'Approvisionnement", description: "Endroit où vous récoltez l'endurance", utility: "L'endurance permet déplacements, ralliements zombie et attaques véhicules", level: 0, category: "ressources", image: "", tags: ["endurance", "déplacement"] },
+                "marche_noir": { name: "Le Marché Noir", description: "Bâtiment où tu peux échanger des ressources", utility: "Échange ressources. Bouclier, téléportation, fragments héros, nourriture", level: 12, category: "commerce", image: "", tags: ["échange", "items"] },
+                "station_radio": { name: "Station de Radio", description: "Sert à recruter des héros", utility: "Recrutement de héros pour ton équipe", level: 13, category: "special", image: "", tags: ["héros", "recrutement"] },
+                "camp_exploration": { name: "Camp d'Exploration", description: "Envoie troupes explorer la carte", utility: "Ressources gratuites (nourriture, équipements). Explore plus loin = gagne mieux", level: 0, category: "exploration", image: "", tags: ["exploration", "ressources"] },
+                "centre_premiers_soins": { name: "Centre de Premiers Soins", description: "Dernier recours quand l'hôpital est saturé", utility: "Dernière chance de soigner avant perte définitive. Pas d'amélioration", level: 13, category: "soin", image: "", tags: ["urgence", "soin"] },
+                "porte_ville": { name: "Porte de la Ville", description: "Entrée principale et défense de la ville", utility: "À améliorer avec la tour. Défense principale. 3 troupes en garnison", level: 15, category: "defense", image: "", tags: ["défense", "garnison", "prioritaire"] },
+                "gare_marchandises": { name: "Gare de Marchandises", description: "Transport et distribution de marchandises", utility: "Augmente la vitesse de récolte", level: 13, category: "commerce", image: "", tags: ["récolte", "vitesse"] },
+                "centre_militaire": { name: "Centre Militaire", description: "Gère formation, capacité et efficacité des troupes", utility: "Entraîne plus de troupes simultanément. Débloque niveaux supérieurs", level: 15, category: "militaire", image: "", tags: ["formation", "capacité"] },
+                "bibliotheque": { name: "Bibliothèque", description: "Conservation des connaissances", utility: "Augmente vitesse de recherches dans l'institut", level: 13, category: "recherche", image: "", tags: ["recherche", "vitesse"] },
+                "place": { name: "Place", description: "Gère les rassemblements (rallys) dans ton alliance", utility: "Augmente capacité rallys. Attaques groupées contre boss, camps, joueurs", level: 13, category: "alliance", image: "", tags: ["rally", "groupe"] },
+                "formation": { name: "Camp d'Entraînement", description: "Augmente nombre total de troupes possédées", utility: "Plus de capacité pour héberger soldats. Bâtiment de capacité", level: 0, category: "militaire", image: "", tags: ["capacité", "troupes"] },
+                "recyclage_ferrailles": { name: "Recyclage Ferrailles", description: "Recyclage des matériaux", utility: "Production de ferraille et matériaux", level: 10, category: "ressources", image: "", tags: ["recyclage", "production"] },
+                "chantier_forestier": { name: "Chantier Forestier", description: "Exploitation forestière", utility: "Production de bois", level: 15, category: "ressources", image: "", tags: ["bois", "production"] },
+                "residence": { name: "Résidence", description: "Logements pour habitants", utility: "Produit ressources. Village autour de la tour", level: 10, category: "ressources", image: "", tags: ["logement", "production"] },
+                "cuisine": { name: "Cuisine", description: "Préparation de nourriture", utility: "Production de nourriture. Village autour de la tour", level: 10, category: "ressources", image: "", tags: ["nourriture", "production"] },
+                "bar_chasseur_cerfs": { name: "Bar Chasseur de Cerfs", description: "Lieu de repos et moral", utility: "Augmente moral. Produit ressources. Village autour de la tour", level: 10, category: "ressources", image: "", tags: ["moral", "production"] },
+                "hall_alliances": { name: "Hall d'Alliance", description: "Centre de coordination de l'alliance", utility: "Renforts, attaques groupées, aides construction, récompenses alliance", level: 15, category: "alliance", image: "", tags: ["alliance", "coopération"] },
+                "tour_guet": { name: "Tour de Guet", description: "Surveillance des environs", utility: "Détection ennemis. Produit ressources. Village", level: 15, category: "defense", image: "", tags: ["surveillance", "village"] },
+                "chaumiere_chasseur": { name: "Chaumière de Chasseur", description: "Habitat des chasseurs", utility: "Chasse et collecte. Produit ressources. Village", level: 15, category: "ressources", image: "", tags: ["chasse", "village"] },
+                "lieu_reunion": { name: "Lieu de Réunion", description: "Espace de rassemblement", utility: "Coordination des opérations", level: 0, category: "alliance", image: "", tags: ["réunion", "coordination"] },
+                "infirmerie": { name: "Infirmerie", description: "Installations médicales supplémentaires", utility: "Capacité de soins additionnelle", level: 0, category: "soin", image: "", tags: ["soin", "capacité"] }
+            },
+            blockImages: {},
+            movements: [
+                { id: 1, blockId: 1, blockTitle: "Déplacements Basiques", title: "Déplacement de Troupes", content: "Pour déplacer vos troupes, sélectionnez votre armée et cliquez sur la destination. L'endurance est requise." },
+                { id: 2, blockId: 1, blockTitle: "Déplacements Basiques", title: "Gestion de l'Endurance", content: "Récoltez l'endurance à la Station d'Approvisionnement. Elle se régénère avec le temps." }
+            ],
+            attacks: [
+                { id: 1, blockId: 1, blockTitle: "Attaques Coordonnées", title: "Synchronisation", content: "Utilisez le compte à rebours Discord pour synchroniser. Visez le même joueur." },
+                { id: 2, blockId: 1, blockTitle: "Attaques Coordonnées", title: "Espionnage", content: "Toujours envoyer des espions avant une attaque majeure." }
+            ],
+            defenses: [
+                { id: 1, blockId: 1, blockTitle: "Défense Active", title: "Alerte Précoce", content: "Activez le bouclier si ciblé. Prévenez sur Discord." },
+                { id: 2, blockId: 1, blockTitle: "Défense Active", title: "Entraide", content: "Envoyez renforts aux membres attaqués. Défense collective." }
+            ],
+            events: [
+                { id: 1, blockId: 1, blockTitle: "Events Quotidiens", title: "Event Zombie", content: "Participez aux events zombies quotidiens pour ressources et XP." },
+                { id: 2, blockId: 2, blockTitle: "Events Alliance", title: "Ralliements de Guilde", content: "Rejoignez les ralliements d'alliance pour boss et récompenses collectives." }
+            ],
+            tips: [
+                { id: 1, blockId: 1, blockTitle: "Astuces Débutants", title: "Priorité Tour", content: "Améliorez toujours la Tour en priorité. C'est le bâtiment le plus important qui débloque tout le reste." },
+                { id: 2, blockId: 1, blockTitle: "Astuces Débutants", title: "Protégez vos ressources", content: "Utilisez l'Entrepôt pour protéger vos ressources des attaques. Améliorez-le régulièrement." },
+                { id: 3, blockId: 2, blockTitle: "Astuces Avancées", title: "Gestion de l'endurance", content: "Ne gaspillez pas votre endurance. Planifiez vos déplacements et attaques à l'avance." }
+            ]
+        };
+
+        // Admin functions
+        function toggleAdminLogin() {
+            document.getElementById('adminModal').style.display = 'block';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        function loginAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdminMode = true;
+                document.body.classList.add('admin-mode');
+                closeAdminModal();
+                document.getElementById('adminBtn').textContent = '🔓 Admin (Actif)';
+                document.getElementById('adminBtn').style.background = 'var(--success)';
+                renderAll();
+            } else {
+                document.getElementById('loginError').textContent = translations[currentLanguage]['admin-password'] || 'Mot de passe incorrect!';
+            }
+        }
+
+        function logoutAdmin() {
+            if (confirm('Se déconnecter du mode admin ?')) {
+                isAdminMode = false;
+                document.body.classList.remove('admin-mode');
+                document.getElementById('adminBtn').textContent = '🔐 Admin';
+                document.getElementById('adminBtn').style.background = 'rgba(212, 175, 55, 0.2)';
+                renderAll();
+            }
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                btn.classList.add('active');
+                const sectionId = btn.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // Buildings functions
+        function renderBuildings(filter = 'all', searchTerm = '') {
+            const grid = document.getElementById('buildingsGrid');
+            grid.innerHTML = '';
+
+            Object.entries(gameData.buildings).forEach(([id, building]) => {
+                if (filter !== 'all' && building.category !== filter) return;
+                if (searchTerm && !building.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                    !building.description.toLowerCase().includes(searchTerm.toLowerCase())) return;
+
+                const card = document.createElement('div');
+                card.className = 'building-card';
+                card.onclick = () => showBuildingDetail(id, building);
+
+                const imageHtml = building.image ? 
+                    `<img src="${building.image}" alt="${building.name}" class="building-image">` :
+                    `<div class="building-image" style="display: flex; align-items: center; justify-content: center; font-size: 3rem;">🏰</div>`;
+
+                const tagsHtml = building.tags && building.tags.length > 0 ? 
+                    `<div class="building-tags">${building.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : '';
+
+                card.innerHTML = `
+                    ${isAdminMode ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteBuilding('${id}')">🗑️</button>` : ''}
+                    ${imageHtml}
+                    <h3 class="building-name">${building.name}</h3>
+                    ${building.level > 0 ? `<span class="building-level">${translations[currentLanguage]['level'] || 'Niveau'} ${building.level}</span>` : ''}
+                    <span class="building-category">${building.category}</span>
+                    ${tagsHtml}
+                    <p class="building-description">${building.description}</p>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function showBuildingDetail(id, building) {
+            const modal = document.getElementById('buildingModal');
+            const detail = document.getElementById('buildingDetail');
+
+            const imageHtml = building.image ? 
+                `<img src="${building.image}" alt="${building.name}" class="building-image" style="height: 250px;">` :
+                `<div class="building-image" style="height: 250px; display: flex; align-items: center; justify-content: center; font-size: 5rem;">🏰</div>`;
+
+            const tags = building.tags || [];
+            const tagsDisplay = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+
+            detail.innerHTML = `
+                ${isAdminMode ? `
+                    <div class="image-upload-zone" onclick="uploadBuildingImage('${id}')">
+                        📷 ${translations[currentLanguage]['click-image'] || 'Cliquer pour changer l\'image'}
+                    </div>
+                    <input type="file" id="imageUpload-${id}" accept="image/*" style="display:none" onchange="handleImageUpload(event, '${id}')">
+                ` : ''}
+                ${imageHtml}
+                <h2 class="building-name ${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-id="${id}" data-field="name">${building.name}</h2>
+                ${building.level > 0 ? `<span class="building-level">${translations[currentLanguage]['level'] || 'Niveau'} <span class="${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-id="${id}" data-field="level">${building.level}</span></span>` : ''}
+                <span class="building-category">${building.category}</span>
+                <div class="building-tags">${tagsDisplay}</div>
+                ${isAdminMode ? `
+                    <div class="tag-input">
+                        <input type="text" id="newTag-${id}" placeholder="Nouveau tag" style="width: 70%; display: inline-block;">
+                        <button onclick="addTag('${id}')" style="width: 28%; display: inline-block;">+ Tag</button>
+                    </div>
+                ` : ''}
+                <p class="building-description ${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-id="${id}" data-field="description" style="margin-top: 1rem;">${building.description}</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(212, 175, 55, 0.2);">
+                    <strong style="color: var(--accent-gold);">${translations[currentLanguage]['utility'] || 'Utilité'}:</strong><br>
+                    <p class="${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-id="${id}" data-field="utility">${building.utility}</p>
+                </div>
+            `;
+
+            if (isAdminMode) {
+                detail.querySelectorAll('.editable').forEach(el => {
+                    el.addEventListener('blur', function() {
+                        const buildingId = this.getAttribute('data-id');
+                        const field = this.getAttribute('data-field');
+                        gameData.buildings[buildingId][field] = field === 'level' ? parseInt(this.textContent) : this.textContent;
+                        saveData();
+                    });
+                });
+
+                // Tag deletion
+                detail.querySelectorAll('.tag').forEach(tagEl => {
+                    tagEl.onclick = function(e) {
+                        e.stopPropagation();
+                        if (confirm(`Supprimer le tag "${this.textContent}" ?`)) {
+                            const tagText = this.textContent;
+                            gameData.buildings[id].tags = gameData.buildings[id].tags.filter(t => t !== tagText);
+                            saveData();
+                            showBuildingDetail(id, gameData.buildings[id]);
+                        }
+                    };
+                    tagEl.style.cursor = 'pointer';
+                });
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function addTag(buildingId) {
+            const input = document.getElementById(`newTag-${buildingId}`);
+            const tagText = input.value.trim();
+            if (tagText) {
+                if (!gameData.buildings[buildingId].tags) {
+                    gameData.buildings[buildingId].tags = [];
+                }
+                gameData.buildings[buildingId].tags.push(tagText);
+                saveData();
+                showBuildingDetail(buildingId, gameData.buildings[buildingId]);
+                renderBuildings(currentFilter);
+            }
+        }
+
+        function uploadBuildingImage(id) {
+            document.getElementById(`imageUpload-${id}`).click();
+        }
+
+        function handleImageUpload(event, id) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    gameData.buildings[id].image = e.target.result;
+                    saveData();
+                    showBuildingDetail(id, gameData.buildings[id]);
+                    renderBuildings(currentFilter);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function closeBuildingModal() {
+            document.getElementById('buildingModal').style.display = 'none';
+        }
+
+        function addNewBuilding() {
+            if (!isAdminMode) return;
+            const id = 'building_' + Date.now();
+            gameData.buildings[id] = {
+                name: "Nouveau Bâtiment",
+                description: "Description",
+                utility: "Utilité",
+                level: 1,
+                category: "principal",
+                image: "",
+                tags: []
+            };
+            saveData();
+            renderBuildings();
+        }
+
+        function deleteBuilding(id) {
+            if (!isAdminMode) return;
+            if (confirm('Supprimer ce bâtiment ?')) {
+                delete gameData.buildings[id];
+                saveData();
+                renderBuildings();
+            }
+        }
+
+        // Block image upload
+        function uploadBlockImage(type, blockId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const imageKey = `${type}_${blockId}`;
+                        gameData.blockImages[imageKey] = event.target.result;
+                        saveData();
+                        renderTacticalSection(type, type + 'Container');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        // Tactical sections with blocks and images
+        function renderTacticalSection(type, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            // Group items by blockId
+            const blocks = {};
+            gameData[type].forEach(item => {
+                if (!blocks[item.blockId]) {
+                    blocks[item.blockId] = {
+                        title: item.blockTitle,
+                        items: []
+                    };
+                }
+                blocks[item.blockId].items.push(item);
+            });
+
+            // Render each block
+            Object.entries(blocks).forEach(([blockId, block]) => {
+                const blockDiv = document.createElement('div');
+                blockDiv.className = 'tactical-block';
+                
+                const imageKey = `${type}_${blockId}`;
+                const blockImage = gameData.blockImages && gameData.blockImages[imageKey];
+                
+                const imageHtml = blockImage ? 
+                    `<img src="${blockImage}" alt="${block.title}" class="block-image">` :
+                    `<div style="font-size: 3rem; color: var(--accent-gold);">📋</div>`;
+
+                let itemsHtml = block.items.map(item => `
+                    <div class="tactical-item">
+                        ${isAdminMode ? `<button class="delete-btn" onclick="deleteTacticalItem('${type}', ${item.id})">🗑️</button>` : ''}
+                        <h4 class="${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-type="${type}" data-id="${item.id}" data-field="title">${item.title}</h4>
+                        <p class="${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-type="${type}" data-id="${item.id}" data-field="content">${item.content}</p>
+                    </div>
+                `).join('');
+
+                blockDiv.innerHTML = `
+                    ${isAdminMode ? `<button class="delete-block-btn" onclick="deleteBlock('${type}', ${blockId})">🗑️ Supprimer le bloc</button>` : ''}
+                    <div class="block-header">
+                        <div class="block-image-container" ${isAdminMode ? `onclick="uploadBlockImage('${type}', ${blockId})"` : ''}>
+                            ${imageHtml}
+                        </div>
+                        <div class="block-content">
+                            <h3 class="${isAdminMode ? 'editable' : ''}" contenteditable="${isAdminMode}" data-type="${type}" data-blockid="${blockId}" data-field="blockTitle">${block.title}</h3>
+                            ${isAdminMode ? `<p class="image-upload-hint">📷 ${translations[currentLanguage]['click-image'] || 'Cliquer pour ajouter/changer l\'image'}</p>` : ''}
+                        </div>
+                    </div>
+                    ${itemsHtml}
+                    ${isAdminMode ? `<button class="add-item-btn" onclick="addItemToBlock('${type}', ${blockId})">+ ${translations[currentLanguage]['add-entry'] || 'Ajouter une entrée'}</button>` : ''}
+                `;
+
+                container.appendChild(blockDiv);
+            });
+
+            if (isAdminMode) {
+                container.querySelectorAll('.editable').forEach(el => {
+                    el.addEventListener('blur', function() {
+                        const type = this.getAttribute('data-type');
+                        const field = this.getAttribute('data-field');
+                        
+                        if (field === 'blockTitle') {
+                            const blockId = parseInt(this.getAttribute('data-blockid'));
+                            gameData[type].forEach(item => {
+                                if (item.blockId === blockId) {
+                                    item.blockTitle = this.textContent;
+                                }
+                            });
+                        } else {
+                            const id = parseInt(this.getAttribute('data-id'));
+                            const item = gameData[type].find(i => i.id === id);
+                            if (item) {
+                                item[field] = this.textContent;
+                            }
+                        }
+                        saveData();
+                    });
+                });
+            }
+        }
+
+        function addBlock(type) {
+            if (!isAdminMode) return;
+            const newBlockId = Math.max(...gameData[type].map(i => i.blockId), 0) + 1;
+            const newItemId = Math.max(...gameData[type].map(i => i.id), 0) + 1;
+            
+            gameData[type].push({
+                id: newItemId,
+                blockId: newBlockId,
+                blockTitle: "Nouveau Bloc",
+                title: "Nouvelle entrée",
+                content: "Contenu à compléter"
+            });
+            
+            saveData();
+            renderTacticalSection(type, type + 'Container');
+        }
+
+        function deleteBlock(type, blockId) {
+            if (!isAdminMode) return;
+            if (confirm('Supprimer tout ce bloc et ses entrées ?')) {
+                gameData[type] = gameData[type].filter(i => i.blockId !== parseInt(blockId));
+                // Also delete block image if exists
+                const imageKey = `${type}_${blockId}`;
+                if (gameData.blockImages && gameData.blockImages[imageKey]) {
+                    delete gameData.blockImages[imageKey];
+                }
+                saveData();
+                renderTacticalSection(type, type + 'Container');
+            }
+        }
+
+        function addItemToBlock(type, blockId) {
+            if (!isAdminMode) return;
+            const newId = Math.max(...gameData[type].map(i => i.id), 0) + 1;
+            const blockTitle = gameData[type].find(i => i.blockId === parseInt(blockId))?.blockTitle || "Bloc";
+            
+            gameData[type].push({
+                id: newId,
+                blockId: parseInt(blockId),
+                blockTitle: blockTitle,
+                title: "Nouvelle entrée",
+                content: "Contenu à compléter"
+            });
+            
+            saveData();
+            renderTacticalSection(type, type + 'Container');
+        }
+
+        function deleteTacticalItem(type, id) {
+            if (!isAdminMode) return;
+            if (confirm('Supprimer cette entrée ?')) {
+                gameData[type] = gameData[type].filter(i => i.id !== id);
+                saveData();
+                renderTacticalSection(type, type + 'Container');
+            }
+        }
+
+        // Search and filter
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderBuildings(currentFilter, e.target.value);
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-category');
+                renderBuildings(currentFilter, document.getElementById('searchInput').value);
+            });
+        });
+
+        // Save data
+        function saveData() {
+            localStorage.setItem('deathAngelsData', JSON.stringify(gameData));
+        }
+
+        // Render all
+        function renderAll() {
+            renderBuildings();
+            renderTacticalSection('movements', 'movementsContainer');
+            renderTacticalSection('attacks', 'attacksContainer');
+            renderTacticalSection('defenses', 'defensesContainer');
+            renderTacticalSection('events', 'eventsContainer');
+            renderTacticalSection('tips', 'tipsContainer');
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load saved language
+            const savedLang = localStorage.getItem('selectedLanguage');
+            if (savedLang) {
+                currentLanguage = savedLang;
+                document.getElementById('languageSelect').value = savedLang;
+                changeLanguage();
+            }
+            
+            renderAll();
+        });
+
+        // Close modals on click outside
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
