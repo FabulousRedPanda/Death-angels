@@ -684,8 +684,9 @@
         let isAdminMode = false;
         let currentFilter = 'all';
         let currentLanguage = 'fr';
+        let translationCache = {};
 
-        // Translations dictionary
+        // UI Translations dictionary
         const translations = {
             fr: {
                 'subtitle': 'Guide Complet Dark War',
@@ -813,12 +814,88 @@
             }
         };
 
-        // Translation function
-        function changeLanguage() {
-            currentLanguage = document.getElementById('languageSelect').value;
-            localStorage.setItem('selectedLanguage', currentLanguage);
+        // Simple translation function using MyMemory API
+        async function translateText(text, targetLang) {
+            if (!text || targetLang === 'fr') return text;
             
-            // Translate all elements with data-translate attribute
+            const cacheKey = `${text}_${targetLang}`;
+            if (translationCache[cacheKey]) {
+                return translationCache[cacheKey];
+            }
+
+            try {
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fr|${targetLang}`);
+                const data = await response.json();
+                
+                if (data.responseData && data.responseData.translatedText) {
+                    const translated = data.responseData.translatedText;
+                    translationCache[cacheKey] = translated;
+                    return translated;
+                }
+            } catch (error) {
+                console.error('Translation error:', error);
+            }
+            
+            return text;
+        }
+
+        // Translate all content
+        async function translateContent(lang) {
+            if (lang === 'fr') {
+                document.getElementById('translationNotice').classList.remove('active');
+                renderAll();
+                return;
+            }
+
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('translationNotice').classList.add('active');
+
+            try {
+                // Translate buildings
+                for (let [id, building] of Object.entries(gameData.buildings)) {
+                    if (!building._originalName) {
+                        building._originalName = building.name;
+                        building._originalDescription = building.description;
+                        building._originalUtility = building.utility;
+                    }
+
+                    building.name = await translateText(building._originalName, lang);
+                    building.description = await translateText(building._originalDescription, lang);
+                    building.utility = await translateText(building._originalUtility, lang);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                // Translate tactical sections
+                for (let section of ['movements', 'attacks', 'defenses', 'events', 'tips']) {
+                    for (let item of gameData[section]) {
+                        if (!item._originalBlockTitle) {
+                            item._originalBlockTitle = item.blockTitle;
+                            item._originalTitle = item.title;
+                            item._originalContent = item.content;
+                        }
+
+                        item.blockTitle = await translateText(item._originalBlockTitle, lang);
+                        item.title = await translateText(item._originalTitle, lang);
+                        item.content = await translateText(item._originalContent, lang);
+                        
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+
+                renderAll();
+            } catch (error) {
+                console.error('Translation error:', error);
+                alert('Erreur de traduction. Retour au français.');
+                document.getElementById('languageSelect').value = 'fr';
+                currentLanguage = 'fr';
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('active');
+            }
+        }
+
+        // UI translation function
+        function translateUI() {
             document.querySelectorAll('[data-translate]').forEach(element => {
                 const key = element.getAttribute('data-translate');
                 if (translations[currentLanguage] && translations[currentLanguage][key]) {
@@ -826,13 +903,21 @@
                 }
             });
 
-            // Translate placeholders
             document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
                 const key = element.getAttribute('data-translate-placeholder');
                 if (translations[currentLanguage] && translations[currentLanguage][key]) {
                     element.placeholder = translations[currentLanguage][key];
                 }
             });
+        }
+
+        // Translation function
+        async function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            localStorage.setItem('selectedLanguage', currentLanguage);
+            
+            translateUI();
+            await translateContent(currentLanguage);
         }
 
         // Initialize with ALL buildings data
@@ -966,7 +1051,6 @@
                     ${isAdminMode ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteBuilding('${id}')">🗑️</button>` : ''}
                     ${imageHtml}
                     <h3 class="building-name">${building.name}</h3>
-                    ${building.level > 0 ? `<span class="building-level">${translations[currentLanguage]['level'] || 'Niveau'} ${building.level}</span>` : ''}
                     <span class="building-category">${building.category}</span>
                     ${tagsHtml}
                     <p class="building-description">${building.description}</p>
@@ -1182,19 +1266,22 @@
                     el.addEventListener('blur', function() {
                         const type = this.getAttribute('data-type');
                         const field = this.getAttribute('data-field');
+                        const value = this.textContent;
                         
                         if (field === 'blockTitle') {
                             const blockId = parseInt(this.getAttribute('data-blockid'));
                             gameData[type].forEach(item => {
                                 if (item.blockId === blockId) {
-                                    item.blockTitle = this.textContent;
+                                    item.blockTitle = value;
+                                    item[`_original${field.charAt(0).toUpperCase() + field.slice(1)}`] = value;
                                 }
                             });
                         } else {
                             const id = parseInt(this.getAttribute('data-id'));
                             const item = gameData[type].find(i => i.id === id);
                             if (item) {
-                                item[field] = this.textContent;
+                                item[field] = value;
+                                item[`_original${field.charAt(0).toUpperCase() + field.slice(1)}`] = value;
                             }
                         }
                         saveData();
@@ -1213,7 +1300,10 @@
                 blockId: newBlockId,
                 blockTitle: "Nouveau Bloc",
                 title: "Nouvelle entrée",
-                content: "Contenu à compléter"
+                content: "Contenu à compléter",
+                _originalBlockTitle: "Nouveau Bloc",
+                _originalTitle: "Nouvelle entrée",
+                _originalContent: "Contenu à compléter"
             });
             
             saveData();
@@ -1244,7 +1334,10 @@
                 blockId: parseInt(blockId),
                 blockTitle: blockTitle,
                 title: "Nouvelle entrée",
-                content: "Contenu à compléter"
+                content: "Contenu à compléter",
+                _originalBlockTitle: blockTitle,
+                _originalTitle: "Nouvelle entrée",
+                _originalContent: "Contenu à compléter"
             });
             
             saveData();
@@ -1291,15 +1384,18 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
-            // Load saved language
             const savedLang = localStorage.getItem('selectedLanguage');
             if (savedLang) {
                 currentLanguage = savedLang;
                 document.getElementById('languageSelect').value = savedLang;
-                changeLanguage();
             }
             
+            translateUI();
             renderAll();
+            
+            if (savedLang && savedLang !== 'fr') {
+                translateContent(savedLang);
+            }
         });
 
         // Close modals on click outside
