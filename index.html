@@ -1049,11 +1049,7 @@ function daSelType(type) {
 }
 
 // ── Storage blocs — JSONBin.io (partagé pour tous les visiteurs) ──────────────
-// CONFIGURATION : créez un compte gratuit sur https://jsonbin.io
-// 1. Créez un Bin avec ce contenu initial : {}
-// 2. Copiez l'ID du Bin (ex: 6642f1e7acd3cb34a83e5f12) dans BIN_ID
-// 3. Copiez votre Master Key dans BIN_KEY (onglet API Keys)
-var BIN_ID  = '69b2ad7db7ec241ddc617175';
+var BIN_ID  = '69b2b2b0b7ec241ddc6187d5';
 var BIN_KEY = '$2a$10$OGsZTPEgGO65oLj.X9M6V.pSC18oKKmCcMpc.OoIKlqMaCmDuJ35m';
 var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 
@@ -1068,11 +1064,15 @@ function daGetBlocs(callback) {
     return;
   }
   fetch(BIN_URL + '/latest', {
-    headers: { 'X-Master-Key': BIN_KEY }
+    headers: { 'X-Access-Key': BIN_KEY }
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    _blocsCache = data.record || {};
+    var raw = data.record || {};
+    // Nettoie les valeurs null (format initial du bin)
+    var blocs = {};
+    Object.keys(raw).forEach(function(k){ if (raw[k] !== null) blocs[k] = raw[k]; });
+    _blocsCache = blocs;
     _lastFetch  = Date.now();
     callback(_blocsCache);
   })
@@ -1091,7 +1091,7 @@ function daSaveBlocs(blocs, callback) {
   // Sauvegarde distante (partagée)
   fetch(BIN_URL, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
+    headers: { 'Content-Type': 'application/json', 'X-Access-Key': BIN_KEY },
     body: JSON.stringify(blocs)
   })
   .then(function(){ if (callback) callback(); })
