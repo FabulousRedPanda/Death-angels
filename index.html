@@ -1048,52 +1048,104 @@ function daSelType(type) {
   });
 }
 
-// ── Storage blocs ─────────────────────────────────────────────────────────────
-function daGetBlocs() {
-  try { return JSON.parse(localStorage.getItem('da_blocs') || '{}'); } catch(e) { return {}; }
+// ── Storage blocs — JSONBin.io (partagé pour tous les visiteurs) ──────────────
+// CONFIGURATION : créez un compte gratuit sur https://jsonbin.io
+// 1. Créez un Bin avec ce contenu initial : {}
+// 2. Copiez l'ID du Bin (ex: 6642f1e7acd3cb34a83e5f12) dans BIN_ID
+// 3. Copiez votre Master Key dans BIN_KEY (onglet API Keys)
+var BIN_ID  = '69b2ad7db7ec241ddc617175';
+var BIN_KEY = '$2a$10$OGsZTPEgGO65oLj.X9M6V.pSC18oKKmCcMpc.OoIKlqMaCmDuJ35m';
+var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
+
+// Cache local pour éviter de re-fetcher inutilement
+var _blocsCache = null;
+var _lastFetch  = 0;
+
+function daGetBlocs(callback) {
+  // Si cache frais (moins de 30s) on l'utilise directement
+  if (_blocsCache && (Date.now() - _lastFetch) < 30000) {
+    callback(_blocsCache);
+    return;
+  }
+  fetch(BIN_URL + '/latest', {
+    headers: { 'X-Master-Key': BIN_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    _blocsCache = data.record || {};
+    _lastFetch  = Date.now();
+    callback(_blocsCache);
+  })
+  .catch(function(){
+    // Fallback localStorage si JSONBin inaccessible
+    try { callback(JSON.parse(localStorage.getItem('da_blocs') || '{}')); }
+    catch(e){ callback({}); }
+  });
 }
-function daSaveBlocs(blocs) { localStorage.setItem('da_blocs', JSON.stringify(blocs)); }
+
+function daSaveBlocs(blocs, callback) {
+  _blocsCache = blocs;
+  _lastFetch  = Date.now();
+  // Sauvegarde locale immédiate (feedback instantané)
+  localStorage.setItem('da_blocs', JSON.stringify(blocs));
+  // Sauvegarde distante (partagée)
+  fetch(BIN_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
+    body: JSON.stringify(blocs)
+  })
+  .then(function(){ if (callback) callback(); })
+  .catch(function(){ if (callback) callback(); });
+}
 
 // ── Publier un bloc ───────────────────────────────────────────────────────────
 function daPublish() {
   var title = document.getElementById('ap-title').value.trim();
   var msg   = document.getElementById('ap-msg').value.trim();
   if (!title && !msg) { alert('Entrez un titre ou un message.'); return; }
-  var blocs = daGetBlocs();
-  blocs[DA_TYPE] = { type:DA_TYPE, title:title, msg:msg, ts:Date.now() };
-  daSaveBlocs(blocs);
-  document.getElementById('ap-title').value = '';
-  document.getElementById('ap-msg').value   = '';
-  daRenderBlocs();
-  daRefreshManage();
-  daFlash(blocs[DA_TYPE]);
-  daTab('pane-manage');
+  var btn = document.querySelector('.ap-btn.pub');
+  if (btn) { btn.textContent = 'Publication...'; btn.disabled = true; }
+  daGetBlocs(function(blocs) {
+    blocs[DA_TYPE] = { type:DA_TYPE, title:title, msg:msg, ts:Date.now() };
+    daSaveBlocs(blocs, function() {
+      document.getElementById('ap-title').value = '';
+      document.getElementById('ap-msg').value   = '';
+      if (btn) { btn.textContent = '✅ Publie !'; setTimeout(function(){ btn.textContent = '📥 Publier'; btn.disabled = false; }, 2000); }
+      daRenderBlocsData(blocs);
+      daRefreshManageData(blocs);
+      daFlash(blocs[DA_TYPE]);
+      daTab('pane-manage');
+    });
+  });
 }
 
 // ── Supprimer un bloc ─────────────────────────────────────────────────────────
 function daDeleteBloc(type) {
-  var blocs = daGetBlocs();
-  delete blocs[type];
-  daSaveBlocs(blocs);
-  daRenderBlocs();
-  daRefreshManage();
+  daGetBlocs(function(blocs) {
+    delete blocs[type];
+    daSaveBlocs(blocs, function() {
+      daRenderBlocsData(blocs);
+      daRefreshManageData(blocs);
+    });
+  });
 }
 
 // ── Sauvegarder edition inline ────────────────────────────────────────────────
 function daSaveEdit(type) {
-  var blocs = daGetBlocs();
-  if (!blocs[type]) return;
-  var te = document.getElementById('aet-'+type);
-  var me = document.getElementById('aem-'+type);
-  if (te) blocs[type].title = te.value;
-  if (me) blocs[type].msg   = me.value;
-  daSaveBlocs(blocs);
-  // Update the read-only view spans without full re-render
-  var tv = document.getElementById('atv-'+type);
-  var mv = document.getElementById('amv-'+type);
-  if (tv) tv.textContent = blocs[type].title;
-  if (mv) mv.textContent = blocs[type].msg;
-  daRefreshManage();
+  daGetBlocs(function(blocs) {
+    if (!blocs[type]) return;
+    var te = document.getElementById('aet-'+type);
+    var me = document.getElementById('aem-'+type);
+    if (te) blocs[type].title = te.value;
+    if (me) blocs[type].msg   = me.value;
+    daSaveBlocs(blocs, function() {
+      var tv = document.getElementById('atv-'+type);
+      var mv = document.getElementById('amv-'+type);
+      if (tv) tv.textContent = blocs[type].title;
+      if (mv) mv.textContent = blocs[type].msg;
+      daRefreshManageData(blocs);
+    });
+  });
 }
 
 // ── Render blocs dans la section Annonces ─────────────────────────────────────
@@ -1105,7 +1157,10 @@ function daEsc(s) {
 }
 
 function daRenderBlocs() {
-  var blocs = daGetBlocs();
+  daGetBlocs(function(blocs){ daRenderBlocsData(blocs); });
+}
+
+function daRenderBlocsData(blocs) {
   var grid  = document.getElementById('ann-grid');
   var empty = document.getElementById('ann-empty');
   if (!grid) return;
@@ -1125,10 +1180,8 @@ function daRenderBlocs() {
       '<div class="ann-block type-'+type+'">' +
         '<div class="ann-block-icon">'+DA_ICONS[type]+'</div>' +
         '<div>' +
-          // Lecture
           '<span class="ann-block-title ann-block-title-view" id="atv-'+type+'">'+daEsc(b.title)+'</span>' +
           '<div  class="ann-block-msg   ann-block-msg-view"   id="amv-'+type+'">'+daEsc(b.msg)+'</div>' +
-          // Edition (visible seulement en mode admin via CSS)
           '<input  class="ann-block-title-edit" id="aet-'+type+'" value="'+daEsc(b.title)+'" onchange="daSaveEdit(\''+type+'\')" placeholder="Titre...">' +
           '<textarea class="ann-block-msg-edit" id="aem-'+type+'" onchange="daSaveEdit(\''+type+'\')" placeholder="Message...">'+daEsc(b.msg)+'</textarea>' +
           '<div class="ann-block-ts">Publie le '+ts+'</div>' +
@@ -1141,7 +1194,10 @@ function daRenderBlocs() {
 
 // ── Refresh onglet Gerer ──────────────────────────────────────────────────────
 function daRefreshManage() {
-  var blocs = daGetBlocs();
+  daGetBlocs(function(blocs){ daRefreshManageData(blocs); });
+}
+
+function daRefreshManageData(blocs) {
   var list  = document.getElementById('ap-bloc-list');
   if (!list) return;
   var keys = DA_ORDER.filter(function(t){ return !!blocs[t]; });
@@ -1173,7 +1229,7 @@ function daFlash(bloc) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initAdmin() {
-  daRenderBlocs();
+  daRenderBlocs(); // charge depuis JSONBin et affiche
   if (daIsAdmin()) daActivate();
 }
 
