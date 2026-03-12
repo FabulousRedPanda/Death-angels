@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
+
 :root {
   --blood:#8b0000; --ember:#e74c3c; --gold:#d4a017;
   --dark:#0d0d0d; --pale:#cccccc; --white:#f0ece4;
@@ -153,13 +154,418 @@ footer span{color:var(--blood)}
   .tz-arrow{transform:rotate(90deg)}
   .wing-deco{display:none}
 }
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--dark)}
-::-webkit-scrollbar-thumb{background:var(--blood);border-radius:3px}
+
+/* ── ANNONCE BANNIERE ── */
+#annonce-banner {
+  display:none;
+  position:relative;
+  z-index:90;
+  padding:11px 20px;
+  text-align:center;
+  font-family:'Rajdhani',sans-serif;
+  font-size:1rem;
+  font-weight:600;
+  letter-spacing:0.04em;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  animation: banner-slide-in 0.4s ease-out;
+}
+@keyframes banner-slide-in {
+  from { transform:translateY(-100%); opacity:0; }
+  to   { transform:translateY(0);     opacity:1; }
+}
+#annonce-banner.type-info    { background:rgba(30,80,160,0.92); border-bottom:2px solid #4488ff; color:#cce0ff; }
+#annonce-banner.type-warning { background:rgba(140,80,0,0.92);  border-bottom:2px solid #ffaa00; color:#ffe5aa; }
+#annonce-banner.type-danger  { background:rgba(120,0,0,0.95);   border-bottom:2px solid #ff2222; color:#ffcccc; }
+#annonce-banner.type-success { background:rgba(0,80,40,0.92);   border-bottom:2px solid #00cc66; color:#bbffdd; }
+.annonce-icon  { font-size:1.2rem; flex-shrink:0; }
+.annonce-text  { flex:1; text-align:center; }
+.annonce-close { background:transparent; border:none; color:inherit; font-size:1.1rem; cursor:pointer; opacity:0.6; padding:0 4px; flex-shrink:0; transition:opacity .2s; }
+.annonce-close:hover { opacity:1; }
+.annonce-admin-badge { font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:0.15em; opacity:0.5; margin-left:8px; text-transform:uppercase; }
+
+/* ── BOUTON ADMIN DANS NAV ── */
+#admin-nav-btn {
+  margin-left:auto;
+  padding:10px 16px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.7rem;
+  letter-spacing:0.1em;
+  color:#555;
+  cursor:pointer;
+  background:none;
+  border:none;
+  white-space:nowrap;
+  transition:color .2s;
+}
+#admin-nav-btn:hover { color:var(--gold); }
+#admin-nav-btn.logged-in { color:var(--gold); }
+
+/* ── MODAL LOGIN ── */
+#admin-modal-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:500;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(6px);
+  align-items:center;
+  justify-content:center;
+}
+#admin-modal-overlay.open { display:flex; }
+#admin-modal {
+  background:#111;
+  border:1px solid rgba(139,0,0,0.6);
+  border-radius:4px;
+  padding:36px 32px;
+  width:100%;
+  max-width:380px;
+  position:relative;
+}
+#admin-modal h3 {
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.1rem;
+  color:var(--white);
+  margin-bottom:6px;
+  text-align:center;
+}
+#admin-modal .modal-sub { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:#555; text-align:center; letter-spacing:0.15em; margin-bottom:24px; }
+.modal-field { margin-bottom:14px; }
+.modal-field label { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:#777; letter-spacing:0.15em; display:block; margin-bottom:6px; text-transform:uppercase; }
+.modal-field input[type=password], .modal-field input[type=text] {
+  width:100%;
+  background:rgba(0,0,0,0.6);
+  border:1px solid rgba(139,0,0,0.4);
+  color:var(--white);
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.95rem;
+  padding:10px 12px;
+  border-radius:3px;
+  outline:none;
+  transition:border-color .2s;
+}
+.modal-field input:focus { border-color:var(--ember); }
+#login-error { color:#ff6666; font-family:'Share Tech Mono',monospace; font-size:0.7rem; text-align:center; margin-top:-8px; margin-bottom:10px; display:none; }
+.modal-btn-row { display:flex; gap:10px; margin-top:20px; }
+.modal-btn {
+  flex:1;
+  padding:10px;
+  border-radius:3px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.78rem;
+  letter-spacing:0.08em;
+  cursor:pointer;
+  border:none;
+  transition:background .2s;
+}
+.modal-btn.primary { background:var(--blood); color:var(--white); }
+.modal-btn.primary:hover { background:var(--ember); }
+.modal-btn.secondary { background:rgba(255,255,255,0.05); color:#888; border:1px solid rgba(255,255,255,0.1); }
+.modal-btn.secondary:hover { background:rgba(255,255,255,0.1); }
+
+/* ── PANEL ADMIN ANNONCE ── */
+#admin-panel {
+  display:none;
+  background:linear-gradient(135deg, rgba(40,20,0,0.8), rgba(20,10,0,0.9));
+  border:1px solid rgba(212,160,23,0.35);
+  border-left:4px solid var(--gold);
+  border-radius:3px;
+  padding:22px 24px;
+  margin-bottom:20px;
+  position:relative;
+  z-index:1;
+}
+#admin-panel.open { display:block; }
+.admin-panel-title {
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.72rem;
+  color:var(--gold);
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.admin-row { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; align-items:flex-end; }
+.admin-field { flex:1; min-width:200px; }
+.admin-field label { font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:#777; letter-spacing:0.12em; display:block; margin-bottom:5px; text-transform:uppercase; }
+.admin-field input[type=text], .admin-field textarea, .admin-field select {
+  width:100%;
+  background:rgba(0,0,0,0.5);
+  border:1px solid rgba(212,160,23,0.3);
+  color:var(--white);
+  font-family:'Rajdhani',sans-serif;
+  font-size:0.95rem;
+  padding:8px 10px;
+  border-radius:3px;
+  outline:none;
+  transition:border-color .2s;
+}
+.admin-field input:focus, .admin-field textarea:focus, .admin-field select:focus { border-color:var(--gold); }
+.admin-field textarea { resize:vertical; min-height:64px; }
+.admin-field select option { background:#1a1a1a; }
+.admin-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.admin-btn {
+  padding:8px 18px;
+  border-radius:3px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.72rem;
+  letter-spacing:0.08em;
+  cursor:pointer;
+  border:none;
+  transition:background .2s;
+}
+.admin-btn.publish { background:rgba(0,140,60,0.7); color:#aaffcc; border:1px solid rgba(0,180,80,0.4); }
+.admin-btn.publish:hover { background:rgba(0,160,70,0.9); }
+.admin-btn.unpublish { background:rgba(100,0,0,0.6); color:#ffaaaa; border:1px solid rgba(160,0,0,0.4); }
+.admin-btn.unpublish:hover { background:rgba(139,0,0,0.8); }
+.admin-btn.logout { background:rgba(50,50,50,0.6); color:#888; border:1px solid rgba(80,80,80,0.3); }
+.admin-btn.logout:hover { background:rgba(80,80,80,0.5); color:#bbb; }
+.admin-preview-label { font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:#666; letter-spacing:0.1em; margin-top:14px; margin-bottom:6px; }
+
+
+/* ══ BANNIERE FLASH ══════════════════════════════════════════════════════ */
+#annonce-banner {
+  display:none; position:relative; z-index:90;
+  padding:11px 20px; text-align:center;
+  font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:600;
+  letter-spacing:.04em; align-items:center; justify-content:center; gap:12px;
+  animation:slide-down .4s ease-out;
+}
+@keyframes slide-down { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
+#annonce-banner.type-info    {background:rgba(20,50,140,.92);border-bottom:2px solid #4488ff;color:#cce0ff}
+#annonce-banner.type-warning {background:rgba(120,65,0,.92); border-bottom:2px solid #ffaa00;color:#ffe5aa}
+#annonce-banner.type-danger  {background:rgba(120,0,0,.95);  border-bottom:2px solid #ff3333;color:#ffcccc}
+#annonce-banner.type-success {background:rgba(0,80,40,.92);  border-bottom:2px solid #00cc66;color:#bbffdd}
+#annonce-banner .ab-icon  {font-size:1.1rem;flex-shrink:0}
+#annonce-banner .ab-text  {flex:1}
+#annonce-banner .ab-close {background:transparent;border:none;color:inherit;font-size:1rem;cursor:pointer;opacity:.5;padding:0 4px}
+#annonce-banner .ab-close:hover {opacity:1}
+
+/* ══ SECTION ANNONCES (blocs cumulés) ════════════════════════════════════ */
+#annonces { padding-top:28px; padding-bottom:0 }
+.ann-empty {
+  color:#555; font-family:'Share Tech Mono',monospace;
+  font-size:.82rem; padding:20px 0; letter-spacing:.06em;
+}
+.ann-grid  { display:grid; gap:12px }
+
+.ann-block {
+  border-radius:4px; padding:18px 20px 16px;
+  display:grid; grid-template-columns:auto 1fr;
+  gap:0 14px; align-items:start; position:relative;
+  animation:slide-down .35s ease-out;
+}
+.ann-block.type-info    {background:rgba(18,45,120,.32);border:1px solid rgba(68,136,255,.45);border-left:4px solid #4488ff}
+.ann-block.type-warning {background:rgba(100,55,0,.32); border:1px solid rgba(255,170,0,.45); border-left:4px solid #ffaa00}
+.ann-block.type-danger  {background:rgba(100,0,0,.38);  border:1px solid rgba(255,50,50,.45); border-left:4px solid #ff3333}
+.ann-block.type-success {background:rgba(0,65,32,.32);  border:1px solid rgba(0,200,100,.45); border-left:4px solid #00cc66}
+
+.ann-block-icon {font-size:1.5rem;line-height:1;padding-top:2px;grid-row:1/4}
+.ann-block-title {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:1rem; text-transform:uppercase; letter-spacing:.06em;
+}
+.ann-block.type-info    .ann-block-title {color:#88bbff}
+.ann-block.type-warning .ann-block-title {color:#ffcc66}
+.ann-block.type-danger  .ann-block-title {color:#ff9999}
+.ann-block.type-success .ann-block-title {color:#88ffcc}
+
+.ann-block-msg  {font-size:.9rem;line-height:1.55;margin-top:4px;color:#bbb}
+.ann-block-ts   {font-family:'Share Tech Mono',monospace;font-size:.58rem;opacity:.38;margin-top:7px;letter-spacing:.06em}
+
+/* Edition inline (mode admin) */
+.ann-block-title-view, .ann-block-msg-view { display:block }
+.ann-block-title-edit, .ann-block-msg-edit { display:none }
+body.da-admin .ann-block-title-view,
+body.da-admin .ann-block-msg-view  { display:none }
+body.da-admin .ann-block-title-edit,
+body.da-admin .ann-block-msg-edit  { display:block }
+
+.ann-block-title-edit {
+  width:100%; background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.15); border-radius:3px;
+  color:var(--white); font-family:'Rajdhani',sans-serif;
+  font-weight:700; font-size:.95rem; padding:5px 8px; margin-bottom:4px;
+}
+.ann-block-msg-edit {
+  width:100%; background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.12); border-radius:3px;
+  color:#ccc; font-family:'Rajdhani',sans-serif;
+  font-size:.88rem; padding:5px 8px; resize:vertical; min-height:52px;
+  margin-top:2px;
+}
+.ann-block-title-edit:focus, .ann-block-msg-edit:focus {border-color:var(--gold)}
+
+/* Bouton supprimer (admin) */
+.ann-del-btn {
+  display:none; position:absolute; top:10px; right:12px;
+  background:rgba(160,0,0,.45); border:1px solid rgba(200,0,0,.5);
+  color:#ffaaaa; font-family:'Share Tech Mono',monospace;
+  font-size:.62rem; letter-spacing:.08em;
+  padding:3px 9px; border-radius:2px; cursor:pointer; transition:background .2s;
+}
+.ann-del-btn:hover {background:rgba(200,0,0,.75)}
+body.da-admin .ann-del-btn {display:block}
+
+/* ══ BOUTON ADMIN DANS NAV ════════════════════════════════════════════════ */
+#admin-nav-btn {
+  margin-left:auto; padding:10px 16px;
+  font-family:'Share Tech Mono',monospace; font-size:.7rem;
+  letter-spacing:.1em; color:#555; cursor:pointer;
+  background:none; border:none; white-space:nowrap; transition:color .2s;
+}
+#admin-nav-btn:hover {color:var(--gold)}
+#admin-nav-btn.on {color:var(--gold)}
+
+/* ══ MODAL LOGIN ══════════════════════════════════════════════════════════ */
+#da-login-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,.88); backdrop-filter:blur(7px);
+  align-items:center; justify-content:center;
+}
+#da-login-overlay.open {display:flex}
+#da-login-box {
+  background:#111; border:1px solid rgba(139,0,0,.6);
+  border-radius:4px; padding:36px 32px; width:100%; max-width:360px;
+}
+#da-login-box h3 {
+  font-family:'Cinzel Decorative',serif; font-size:1.05rem;
+  color:var(--white); text-align:center; margin-bottom:5px;
+}
+#da-login-box .sub {
+  font-family:'Share Tech Mono',monospace; font-size:.65rem;
+  color:#555; text-align:center; letter-spacing:.15em; margin-bottom:24px;
+}
+#da-login-box label {
+  font-family:'Share Tech Mono',monospace; font-size:.65rem;
+  color:#777; letter-spacing:.14em; display:block;
+  margin-bottom:6px; text-transform:uppercase;
+}
+#da-pwd {
+  width:100%; background:rgba(0,0,0,.6);
+  border:1px solid rgba(139,0,0,.4); color:var(--white);
+  font-family:'Share Tech Mono',monospace; font-size:.95rem;
+  padding:10px 12px; border-radius:3px; outline:none;
+  transition:border-color .2s; margin-bottom:8px;
+}
+#da-pwd:focus {border-color:var(--ember)}
+#da-err {
+  color:#ff6666; font-family:'Share Tech Mono',monospace;
+  font-size:.68rem; text-align:center; margin-bottom:10px; display:none;
+}
+.da-btn-row {display:flex;gap:10px;margin-top:16px}
+.da-btn {
+  flex:1; padding:10px; border-radius:3px;
+  font-family:'Share Tech Mono',monospace; font-size:.76rem;
+  letter-spacing:.07em; cursor:pointer; border:none; transition:background .2s;
+}
+.da-btn.prim {background:var(--blood);color:var(--white)}
+.da-btn.prim:hover {background:var(--ember)}
+.da-btn.sec  {background:rgba(255,255,255,.05);color:#888;border:1px solid rgba(255,255,255,.1)}
+.da-btn.sec:hover {background:rgba(255,255,255,.1)}
+
+/* ══ PANNEAU ADMIN ════════════════════════════════════════════════════════ */
+#admin-panel {
+  display:none;
+  background:linear-gradient(135deg,rgba(35,18,0,.82),rgba(18,10,0,.9));
+  border:1px solid rgba(212,160,23,.35); border-left:4px solid var(--gold);
+  border-radius:3px; padding:0; margin-bottom:0;
+}
+#admin-panel.open {display:block}
+.ap-header {
+  font-family:'Share Tech Mono',monospace; font-size:.7rem;
+  color:var(--gold); letter-spacing:.18em; text-transform:uppercase;
+  padding:14px 20px 0; display:flex; align-items:center; gap:8px;
+}
+/* Onglets */
+.ap-tabs {
+  display:flex; gap:0; border-bottom:1px solid rgba(212,160,23,.25);
+  margin:12px 0 0; padding:0 20px;
+}
+.ap-tab {
+  font-family:'Share Tech Mono',monospace; font-size:.68rem;
+  letter-spacing:.1em; text-transform:uppercase;
+  padding:8px 16px; cursor:pointer; background:transparent;
+  border:none; color:#555;
+  border-bottom:2px solid transparent; transition:color .15s,border-color .15s;
+}
+.ap-tab:hover {color:#aaa}
+.ap-tab.on {color:var(--gold);border-bottom-color:var(--gold)}
+.ap-pane {display:none; padding:18px 20px 20px}
+.ap-pane.on {display:block}
+
+/* Formulaire dans panneau */
+.ap-field {margin-bottom:12px}
+.ap-field label {
+  font-family:'Share Tech Mono',monospace; font-size:.63rem;
+  color:#666; letter-spacing:.12em; display:block;
+  margin-bottom:5px; text-transform:uppercase;
+}
+.ap-field input,.ap-field textarea,.ap-field select {
+  width:100%; background:rgba(0,0,0,.5);
+  border:1px solid rgba(212,160,23,.28); color:var(--white);
+  font-family:'Rajdhani',sans-serif; font-size:.95rem;
+  padding:8px 10px; border-radius:3px; outline:none; transition:border-color .2s;
+}
+.ap-field input:focus,.ap-field textarea:focus,.ap-field select:focus {border-color:var(--gold)}
+.ap-field textarea {resize:vertical;min-height:62px}
+.ap-field select option {background:#1a1a1a}
+
+/* Grille types */
+.ap-types {display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.ap-type-btn {
+  padding:7px 4px; border-radius:3px; cursor:pointer;
+  font-family:'Share Tech Mono',monospace; font-size:.65rem;
+  letter-spacing:.06em; border:1px solid transparent;
+  transition:box-shadow .15s; text-align:center;
+}
+.ap-type-btn.t-info    {background:rgba(18,45,120,.5);color:#88bbff;border-color:rgba(68,136,255,.35)}
+.ap-type-btn.t-warning {background:rgba(100,55,0,.5); color:#ffcc66;border-color:rgba(255,170,0,.35)}
+.ap-type-btn.t-danger  {background:rgba(100,0,0,.5);  color:#ff9999;border-color:rgba(255,50,50,.35)}
+.ap-type-btn.t-success {background:rgba(0,65,32,.5);  color:#88ffcc;border-color:rgba(0,200,100,.35)}
+.ap-type-btn.sel {box-shadow:0 0 0 2px var(--gold)}
+
+/* Boutons action */
+.ap-actions {display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.ap-btn {
+  padding:8px 16px; border-radius:3px;
+  font-family:'Share Tech Mono',monospace; font-size:.7rem;
+  letter-spacing:.08em; cursor:pointer; border:none; transition:background .2s;
+}
+.ap-btn.pub    {background:rgba(0,120,50,.65);color:#aaffcc;border:1px solid rgba(0,160,70,.4)}
+.ap-btn.pub:hover {background:rgba(0,150,60,.9)}
+.ap-btn.out    {background:rgba(50,50,50,.6);color:#888;border:1px solid rgba(80,80,80,.3)}
+.ap-btn.out:hover {background:rgba(80,80,80,.5);color:#ccc}
+
+/* Liste blocs dans onglet gérer */
+.ap-bloc-list {display:grid;gap:7px;margin-top:4px}
+.ap-bloc-item {
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:3px;
+  background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.07);
+}
+.ap-bloc-item .lbl {
+  font-family:'Rajdhani',sans-serif;font-size:.9rem;color:#ccc;
+  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ap-bloc-item .del {
+  background:rgba(120,0,0,.45);border:1px solid rgba(160,0,0,.5);
+  color:#ff9999;font-family:'Share Tech Mono',monospace;font-size:.62rem;
+  padding:3px 9px;border-radius:2px;cursor:pointer;flex-shrink:0;
+  transition:background .2s;
+}
+.ap-bloc-item .del:hover {background:rgba(180,0,0,.75)}
+.ap-no-blocs {color:#555;font-family:'Share Tech Mono',monospace;font-size:.78rem;letter-spacing:.06em}
+
 </style>
 </head>
 <body>
-<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(13,13,13,0.97);border-top:1px solid rgba(139,0,0,0.6);padding:14px 20px;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(10px);">
+
+<!-- ── PWA INSTALL BANNER ── -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(13,13,13,.97);border-top:1px solid rgba(139,0,0,.6);padding:14px 20px;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(10px);">
   <div style="display:flex;align-items:center;gap:12px;">
     <img src="icon-192.png" style="width:36px;height:36px;border-radius:8px;">
     <div>
@@ -190,6 +596,7 @@ footer span{color:var(--blood)}
 
 <nav>
   <ul>
+    <li><a href="#annonces">Annonces</a></li>
     <li><a href="#timezone">Fuseau Horaire</a></li>
     <li><a href="#agenda">Agenda</a></li>
     <li><a href="#vs">VS Alliance</a></li>
@@ -197,9 +604,88 @@ footer span{color:var(--blood)}
     <li><a href="#liens">Liens</a></li>
     <li><a href="#media">Medias</a></li>
   </ul>
+  <button id="admin-nav-btn" onclick="daToggleModal()">&#9881; Admin</button>
 </nav>
 
+<!-- ── BANNIERE FLASH (derniere annonce publiee) ── -->
+<div id="annonce-banner">
+  <span class="ab-icon" id="ab-icon"></span>
+  <span class="ab-text" id="ab-text"></span>
+  <button class="ab-close" onclick="document.getElementById('annonce-banner').style.display='none'">&#x2715;</button>
+</div>
+
+<!-- ── MODAL LOGIN ADMIN ── -->
+<div id="da-login-overlay">
+  <div id="da-login-box">
+    <h3>&#9760; Acces Administrateur</h3>
+    <p class="sub">DEATH ANGELS &mdash; ZONE RESTREINTE</p>
+    <label>Mot de passe</label>
+    <input type="password" id="da-pwd" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+           onkeydown="if(event.key==='Enter')daLogin()">
+    <div id="da-err">Mot de passe incorrect</div>
+    <div class="da-btn-row">
+      <button class="da-btn sec" onclick="daCloseModal()">Annuler</button>
+      <button class="da-btn prim" onclick="daLogin()">Connexion</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANNEAU ADMIN ── -->
+<div id="admin-panel">
+  <div class="ap-header">&#9881;&nbsp; Panneau Administrateur &mdash; Death Angels</div>
+  <div class="ap-tabs">
+    <button class="ap-tab on"  onclick="daTab('pane-add')">&#43; Nouveau bloc</button>
+    <button class="ap-tab"     onclick="daTab('pane-manage')">&#9776; Gerer</button>
+    <button class="ap-tab"     onclick="daTab('pane-session')">&#128274; Session</button>
+  </div>
+
+  <!-- PANE : Ajouter un bloc -->
+  <div class="ap-pane on" id="pane-add">
+    <p style="font-size:.8rem;color:#666;margin-bottom:12px;">Choisissez le type (1 bloc par type, le nouveau ecrase l'ancien) :</p>
+    <div class="ap-types">
+      <button class="ap-type-btn t-info sel"    id="tbt-info"    onclick="daSelType('info')">&#128226; Info</button>
+      <button class="ap-type-btn t-warning"      id="tbt-warning" onclick="daSelType('warning')">&#9888; Attention</button>
+      <button class="ap-type-btn t-danger"       id="tbt-danger"  onclick="daSelType('danger')">&#128680; Urgent</button>
+      <button class="ap-type-btn t-success"      id="tbt-success" onclick="daSelType('success')">&#9989; Victoire</button>
+    </div>
+    <div class="ap-field">
+      <label>Titre</label>
+      <input type="text" id="ap-title" placeholder="Ex : Shield obligatoire ce soir !">
+    </div>
+    <div class="ap-field">
+      <label>Message</label>
+      <textarea id="ap-msg" placeholder="Ex : Tout le monde doit poser son shield avant 3h du matin. VS demain matin."></textarea>
+    </div>
+    <div class="ap-actions">
+      <button class="ap-btn pub" onclick="daPublish()">&#128229; Publier</button>
+    </div>
+  </div>
+
+  <!-- PANE : Gerer -->
+  <div class="ap-pane" id="pane-manage">
+    <p style="font-size:.8rem;color:#666;margin-bottom:12px;">Blocs actifs &mdash; modifiables directement dans la section Annonces :</p>
+    <div class="ap-bloc-list" id="ap-bloc-list">
+      <p class="ap-no-blocs">Aucun bloc actif.</p>
+    </div>
+  </div>
+
+  <!-- PANE : Session -->
+  <div class="ap-pane" id="pane-session">
+    <p style="font-size:.88rem;color:#aaa;margin-bottom:18px;">Connecte en tant qu'administrateur.</p>
+    <div class="ap-actions">
+      <button class="ap-btn out" onclick="daLogout()">&#128274; Deconnexion</button>
+    </div>
+  </div>
+</div>
+
 <main>
+
+<!-- ── SECTION ANNONCES ── -->
+<section id="annonces">
+  <h2 class="section-title">&#128226; Annonces de l'Alliance</h2>
+  <p class="ann-empty" id="ann-empty">Aucune annonce pour le moment.</p>
+  <div class="ann-grid" id="ann-grid"></div>
+</section>
 
 <section id="timezone">
   <h2 class="section-title">Convertisseur Heure Serveur</h2>
@@ -353,12 +839,8 @@ footer span{color:var(--blood)}
 
 </main>
 
-<footer>
-  <p><span>Death Angels</span> &mdash; Dark War: Survivor</p>
-  <p style="margin-top:6px;font-size:.68rem;">Site non-officiel &mdash; Usage interne a l'alliance uniquement</p>
-</footer>
-
 <script>
+
 var SERVER_OFFSET = -120; // UTC-2 : Paris UTC+1 (hiver) = serveur + 3h
 
 function localToServer(h, m) {
@@ -480,15 +962,224 @@ function buildAgenda() {
   if (bn) bn.disabled = (weekOffset>=4);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('btn-prev').addEventListener('click', function(){ weekOffset--; buildAgenda(); });
-  document.getElementById('btn-next').addEventListener('click', function(){ weekOffset++; buildAgenda(); });
-  buildAgenda();
-  convertTime();
-});
+// ══ ADMIN & ANNONCES ═════════════════════════════════════════════════════════
 
-  // ── SERVICE WORKER (PWA) ─────────────────────────────────────────────────
-  if ('serviceWorker' in navigator) {
+var DA_ICONS = {info:'\uD83D\uDCE2', warning:'\u26A0\uFE0F', danger:'\uD83D\uDEA8', success:'\u2705'};
+var DA_LABELS = {info:'Info', warning:'Attention', danger:'Urgent', success:'Victoire'};
+var DA_TYPE = 'info';
+
+// ── Hash simple (comparaison client) ─────────────────────────────────────────
+function daHash(s) {
+  var h = 0x811c9dc5;
+  for (var i=0; i<s.length; i++) { h ^= s.charCodeAt(i); h = (h*0x01000193)>>>0; }
+  return h.toString(16);
+}
+var DA_HASH = daHash('D@rkW@rAngl3s');
+
+function daIsAdmin() { return localStorage.getItem('da_admin') === DA_HASH; }
+
+// ── Modal login ───────────────────────────────────────────────────────────────
+function daToggleModal() {
+  if (daIsAdmin()) { daTogglePanel(); return; }
+  var o = document.getElementById('da-login-overlay');
+  o.classList.toggle('open');
+  if (o.classList.contains('open')) {
+    setTimeout(function(){ document.getElementById('da-pwd').focus(); }, 80);
+  }
+}
+function daCloseModal() {
+  document.getElementById('da-login-overlay').classList.remove('open');
+  document.getElementById('da-err').style.display = 'none';
+}
+function daLogin() {
+  var pwd = document.getElementById('da-pwd').value;
+  var err = document.getElementById('da-err');
+  if (daHash(pwd) === DA_HASH) {
+    localStorage.setItem('da_admin', DA_HASH);
+    document.getElementById('da-pwd').value = '';
+    daCloseModal();
+    daActivate();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('da-pwd').value = '';
+    document.getElementById('da-pwd').focus();
+  }
+}
+function daLogout() {
+  localStorage.removeItem('da_admin');
+  document.body.classList.remove('da-admin');
+  document.getElementById('admin-panel').classList.remove('open');
+  var btn = document.getElementById('admin-nav-btn');
+  btn.innerHTML = '\u2699\uFE0F Admin';
+  btn.classList.remove('on');
+}
+function daActivate() {
+  document.body.classList.add('da-admin');
+  document.getElementById('admin-panel').classList.add('open');
+  var btn = document.getElementById('admin-nav-btn');
+  btn.innerHTML = '\u2699\uFE0F Admin \u25CF';
+  btn.classList.add('on');
+  daRefreshManage();
+}
+function daTogglePanel() {
+  var p = document.getElementById('admin-panel');
+  p.classList.toggle('open');
+  if (p.classList.contains('open')) daRefreshManage();
+}
+
+// ── Onglets ───────────────────────────────────────────────────────────────────
+function daTab(paneId) {
+  var panes = ['pane-add','pane-manage','pane-session'];
+  var tabs  = document.querySelectorAll('.ap-tab');
+  panes.forEach(function(id,i) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('on', id === paneId);
+    if (tabs[i]) tabs[i].classList.toggle('on', id === paneId);
+  });
+  if (paneId === 'pane-manage') daRefreshManage();
+}
+
+// ── Selecteur de type ─────────────────────────────────────────────────────────
+function daSelType(type) {
+  DA_TYPE = type;
+  ['info','warning','danger','success'].forEach(function(t) {
+    var b = document.getElementById('tbt-'+t);
+    if (b) b.classList.toggle('sel', t === type);
+  });
+}
+
+// ── Storage blocs ─────────────────────────────────────────────────────────────
+function daGetBlocs() {
+  try { return JSON.parse(localStorage.getItem('da_blocs') || '{}'); } catch(e) { return {}; }
+}
+function daSaveBlocs(blocs) { localStorage.setItem('da_blocs', JSON.stringify(blocs)); }
+
+// ── Publier un bloc ───────────────────────────────────────────────────────────
+function daPublish() {
+  var title = document.getElementById('ap-title').value.trim();
+  var msg   = document.getElementById('ap-msg').value.trim();
+  if (!title && !msg) { alert('Entrez un titre ou un message.'); return; }
+  var blocs = daGetBlocs();
+  blocs[DA_TYPE] = { type:DA_TYPE, title:title, msg:msg, ts:Date.now() };
+  daSaveBlocs(blocs);
+  document.getElementById('ap-title').value = '';
+  document.getElementById('ap-msg').value   = '';
+  daRenderBlocs();
+  daRefreshManage();
+  daFlash(blocs[DA_TYPE]);
+  daTab('pane-manage');
+}
+
+// ── Supprimer un bloc ─────────────────────────────────────────────────────────
+function daDeleteBloc(type) {
+  var blocs = daGetBlocs();
+  delete blocs[type];
+  daSaveBlocs(blocs);
+  daRenderBlocs();
+  daRefreshManage();
+}
+
+// ── Sauvegarder edition inline ────────────────────────────────────────────────
+function daSaveEdit(type) {
+  var blocs = daGetBlocs();
+  if (!blocs[type]) return;
+  var te = document.getElementById('aet-'+type);
+  var me = document.getElementById('aem-'+type);
+  if (te) blocs[type].title = te.value;
+  if (me) blocs[type].msg   = me.value;
+  daSaveBlocs(blocs);
+  // Update the read-only view spans without full re-render
+  var tv = document.getElementById('atv-'+type);
+  var mv = document.getElementById('amv-'+type);
+  if (tv) tv.textContent = blocs[type].title;
+  if (mv) mv.textContent = blocs[type].msg;
+  daRefreshManage();
+}
+
+// ── Render blocs dans la section Annonces ─────────────────────────────────────
+var DA_ORDER = ['danger','warning','info','success'];
+
+function daEsc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function daRenderBlocs() {
+  var blocs = daGetBlocs();
+  var grid  = document.getElementById('ann-grid');
+  var empty = document.getElementById('ann-empty');
+  if (!grid) return;
+  var keys = DA_ORDER.filter(function(t){ return !!blocs[t]; });
+  if (keys.length === 0) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  var html = '';
+  keys.forEach(function(type) {
+    var b  = blocs[type];
+    var d  = new Date(b.ts);
+    var ts = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    html +=
+      '<div class="ann-block type-'+type+'">' +
+        '<div class="ann-block-icon">'+DA_ICONS[type]+'</div>' +
+        '<div>' +
+          // Lecture
+          '<span class="ann-block-title ann-block-title-view" id="atv-'+type+'">'+daEsc(b.title)+'</span>' +
+          '<div  class="ann-block-msg   ann-block-msg-view"   id="amv-'+type+'">'+daEsc(b.msg)+'</div>' +
+          // Edition (visible seulement en mode admin via CSS)
+          '<input  class="ann-block-title-edit" id="aet-'+type+'" value="'+daEsc(b.title)+'" onchange="daSaveEdit(\''+type+'\')" placeholder="Titre...">' +
+          '<textarea class="ann-block-msg-edit" id="aem-'+type+'" onchange="daSaveEdit(\''+type+'\')" placeholder="Message...">'+daEsc(b.msg)+'</textarea>' +
+          '<div class="ann-block-ts">Publie le '+ts+'</div>' +
+        '</div>' +
+        '<button class="ann-del-btn" onclick="daDeleteBloc(\''+type+'\')">&#x2715; Retirer</button>' +
+      '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+// ── Refresh onglet Gerer ──────────────────────────────────────────────────────
+function daRefreshManage() {
+  var blocs = daGetBlocs();
+  var list  = document.getElementById('ap-bloc-list');
+  if (!list) return;
+  var keys = DA_ORDER.filter(function(t){ return !!blocs[t]; });
+  if (keys.length === 0) {
+    list.innerHTML = '<p class="ap-no-blocs">Aucun bloc actif.</p>';
+    return;
+  }
+  var html = '';
+  keys.forEach(function(type) {
+    var b = blocs[type];
+    html +=
+      '<div class="ap-bloc-item">' +
+        '<span class="lbl">'+DA_ICONS[type]+' ['+DA_LABELS[type]+'] '+daEsc(b.title)+'</span>' +
+        '<button class="del" onclick="daDeleteBloc(\''+type+'\')">Supprimer</button>' +
+      '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ── Banniere flash ────────────────────────────────────────────────────────────
+function daFlash(bloc) {
+  var b = document.getElementById('annonce-banner');
+  b.className = 'type-'+bloc.type;
+  b.style.display = 'flex';
+  document.getElementById('ab-icon').textContent = DA_ICONS[bloc.type]||'';
+  document.getElementById('ab-text').textContent = (bloc.title||'') + (bloc.msg ? ' — '+bloc.msg : '');
+  b.style.animation='none'; b.offsetHeight; b.style.animation='slide-down .4s ease-out';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function initAdmin() {
+  daRenderBlocs();
+  if (daIsAdmin()) daActivate();
+}
+
+// ══ SERVICE WORKER (PWA) ══════════════════════════════════════════════════════
+// ── SERVICE WORKER (PWA)
+    if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('./sw.js').then(function(reg) {
         console.log('SW enregistre, scope:', reg.scope);
@@ -522,6 +1213,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (banner) banner.style.display = 'none';
     });
   }
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('btn-prev').addEventListener('click', function(){ weekOffset--; buildAgenda(); });
+  document.getElementById('btn-next').addEventListener('click', function(){ weekOffset++; buildAgenda(); });
+  buildAgenda();
+  convertTime();
+  initAdmin();
+});
 </script>
 </body>
 </html>
