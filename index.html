@@ -1253,6 +1253,9 @@ function initOneSignal() {
     OneSignal.init({
       appId: ONESIGNAL_APP_ID,
       notifyButton: { enable: false },
+    }).then(function() {
+      // Demande la permission automatiquement à tous les visiteurs
+      OneSignal.Notifications.requestPermission();
     });
   });
 }
@@ -1294,9 +1297,9 @@ function daSendPush(title, message) {
 
 // ══ SERVICE WORKER (PWA) ══════════════════════════════════════════════════════
 // ── SERVICE WORKER (PWA)
-    if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      navigator.serviceWorker.register('/OneSignalSDKWorker.js', { scope: '/' }).then(function(reg) {
         console.log('SW enregistre, scope:', reg.scope);
       }).catch(function(err) {
         console.log('SW erreur:', err);
