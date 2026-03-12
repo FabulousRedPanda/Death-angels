@@ -12,6 +12,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Death Angels">
+<!-- OneSignal Push Notifications -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -1020,6 +1022,8 @@ function daActivate() {
   btn.innerHTML = '\u2699\uFE0F Admin \u25CF';
   btn.classList.add('on');
   daRefreshManage();
+  // Demander la permission de notifier dès la connexion admin
+  daRequestNotifPermission();
 }
 function daTogglePanel() {
   var p = document.getElementById('admin-panel');
@@ -1114,6 +1118,10 @@ function daPublish() {
       daRenderBlocsData(blocs);
       daRefreshManageData(blocs);
       daFlash(blocs[DA_TYPE]);
+      // Push notification uniquement pour les annonces Urgentes
+      if (DA_TYPE === 'danger') {
+        daSendPush(title || '🚨 Alerte Alliance', msg || 'Nouvelle annonce urgente !');
+      }
       daTab('pane-manage');
     });
   });
@@ -1233,6 +1241,57 @@ function initAdmin() {
   if (daIsAdmin()) daActivate();
 }
 
+// ══ ONESIGNAL — PUSH NOTIFICATIONS ═══════════════════════════════════════════
+var ONESIGNAL_APP_ID  = '8986f23d-7c2b-4532-bdfa-a66cedc370c4';
+var ONESIGNAL_KEY_ID  = 'ewoqctq6nu63fu42v4kmqrz6v';
+var ONESIGNAL_API_KEY = 'os_v2_app_rgdpepl4fnctfpp2uzwo3q3qyqewoqctq6nu63fu42v4kmqrz6vvsdwkxv3yfi4fyikkcj7k7x56ezex4f3xg6noaztakkhjau2km6q';
+var ONESIGNAL_SITE    = 'https://death-angels.ovh';
+
+function initOneSignal() {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.init({
+      appId: ONESIGNAL_APP_ID,
+      notifyButton: { enable: false },
+    });
+  });
+}
+
+// Demander la permission de notifier
+function daRequestNotifPermission() {
+  if (!window.OneSignalDeferred) return;
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.Notifications.requestPermission();
+  });
+}
+
+// Envoyer un push via l'API v2 OneSignal
+function daSendPush(title, message) {
+  fetch('https://api.onesignal.com/notifications', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': 'Key ' + ONESIGNAL_API_KEY
+    },
+    body: JSON.stringify({
+      app_id:            ONESIGNAL_APP_ID,
+      included_segments: ['All'],
+      headings:          { fr: '\uD83D\uDD34 ' + title, en: '\uD83D\uDD34 ' + title },
+      contents:          { fr: message, en: message },
+      url:               ONESIGNAL_SITE,
+      chrome_web_icon:   ONESIGNAL_SITE + '/icon-192.png',
+      firefox_icon:      ONESIGNAL_SITE + '/icon-192.png',
+      priority:          10
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.errors) console.warn('OneSignal push error:', data.errors);
+    else console.log('Push envoye a', data.recipients, 'abonnes');
+  })
+  .catch(function(e){ console.warn('Push failed:', e); });
+}
+
 // ══ SERVICE WORKER (PWA) ══════════════════════════════════════════════════════
 // ── SERVICE WORKER (PWA)
     if ('serviceWorker' in navigator) {
@@ -1275,6 +1334,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-next').addEventListener('click', function(){ weekOffset++; buildAgenda(); });
   buildAgenda();
   convertTime();
+  initOneSignal();
   initAdmin();
 });
 </script>
