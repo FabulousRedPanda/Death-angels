@@ -1,0 +1,43 @@
+{
+  "name": "Death Angels - Dark War Survival",
+  "short_name": "Death Angels",
+  "description": "Guide & Agenda de l'alliance Death Angels sur Dark War: Survival",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0d0d",
+  "theme_color": "#8b0000",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Agenda",
+      "url": "./index.html#agenda",
+      "description": "Voir l'agenda de la semaine"
+    },
+    {
+      "name": "VS Alliance",
+      "url": "./index.html#vs",
+      "description": "Guide VS Alliance"
+    },
+    {
+      "name": "Fuseau Horaire",
+      "url": "./index.html#timezone",
+      "description": "Convertisseur heure serveur"
+    }
+  ]
+}

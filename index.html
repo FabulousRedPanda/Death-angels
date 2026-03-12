@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Death Angels - Dark War: Survival</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8b0000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Death Angels">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Death Angels">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -105,7 +113,7 @@ section{margin-bottom:70px}
 .vs-day-theme{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--gold);letter-spacing:.1em;text-align:right;text-transform:uppercase}
 .vs-day-card ul{list-style:none;display:flex;flex-direction:column;gap:6px}
 .vs-day-card ul li{padding-left:14px;position:relative;color:#aaa;font-size:.9rem;line-height:1.5}
-.vs-day-card ul li::before{content:'&#9658;';position:absolute;left:0;color:var(--ember);font-size:.75em;top:3px}
+.vs-day-card ul li::before{content:'\25B6';position:absolute;left:0;color:var(--ember);font-size:.75em;top:3px}
 .vs-day-card.saturday ul li::before{color:var(--gold)}
 .warning-box{background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.32);border-left:4px solid var(--gold);border-radius:3px;padding:18px 22px;margin-top:26px}
 .warning-box h4{font-weight:700;font-size:.95rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px}
@@ -151,6 +159,19 @@ footer span{color:var(--blood)}
 </style>
 </head>
 <body>
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(13,13,13,0.97);border-top:1px solid rgba(139,0,0,0.6);padding:14px 20px;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(10px);">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="icon-192.png" style="width:36px;height:36px;border-radius:8px;">
+    <div>
+      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;color:#f0ece4;font-size:.95rem;">Installer Death Angels</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#888;letter-spacing:.08em;">Acceder hors-ligne depuis votre ecran d'accueil</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button onclick="document.getElementById('install-banner').style.display='none'" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#888;font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:7px 14px;border-radius:3px;cursor:pointer;">Plus tard</button>
+    <button onclick="installPWA()" style="background:rgba(139,0,0,.8);border:1px solid rgba(139,0,0,.9);color:#f0ece4;font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:7px 14px;border-radius:3px;cursor:pointer;font-weight:700;">Installer</button>
+  </div>
+</div>
 
 <header>
   <div class="header-wings">
@@ -192,7 +213,7 @@ footer span{color:var(--blood)}
     </div>
     <div class="tz-arrow">&#8594;</div>
     <div class="tz-result">
-      <div class="tz-label">Heure Serveur (UTC-3)</div>
+      <div class="tz-label">Heure Serveur (UTC-2)</div>
       <div class="time-display" id="serverOutput">--:--</div>
       <div class="tz-name" id="tzName">Detection...</div>
       <div style="margin-top:10px;font-size:.76rem;color:#666;" id="tzOffset"></div>
@@ -338,7 +359,7 @@ footer span{color:var(--blood)}
 </footer>
 
 <script>
-var SERVER_OFFSET = -180;
+var SERVER_OFFSET = -120; // UTC-2 : Paris UTC+1 (hiver) = serveur + 3h
 
 function localToServer(h, m) {
   var off = -new Date().getTimezoneOffset();
@@ -465,6 +486,42 @@ document.addEventListener('DOMContentLoaded', function() {
   buildAgenda();
   convertTime();
 });
+
+  // ── SERVICE WORKER (PWA) ─────────────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js').then(function(reg) {
+        console.log('SW enregistre, scope:', reg.scope);
+      }).catch(function(err) {
+        console.log('SW erreur:', err);
+      });
+    });
+  }
+
+  // Banniere d'installation PWA
+  var deferredPrompt;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    var banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'flex';
+  });
+
+  window.addEventListener('appinstalled', function() {
+    var banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
+    deferredPrompt = null;
+  });
+
+  function installPWA() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(result) {
+      deferredPrompt = null;
+      var banner = document.getElementById('install-banner');
+      if (banner) banner.style.display = 'none';
+    });
+  }
 </script>
 </body>
 </html>
