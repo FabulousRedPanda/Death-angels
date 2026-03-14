@@ -1123,16 +1123,22 @@ function buildAgendaWithEvents(customEvs) {
   var today  = new Date(); today.setHours(0,0,0,0);
   var html   = '';
 
-  for (var i = 0; i < AGENDA.length; i++) {
+  // Trouver l'index du jour d'aujourd'hui dans la semaine (0=lundi...6=dimanche)
+  var todayOffset = Math.round((today - monday) / 86400000);
+  // Sur la semaine courante : commencer à aujourd'hui. Sur les autres semaines : commencer à lundi.
+  var startIdx = (weekOffset === 0 && todayOffset >= 0 && todayOffset < 7) ? todayOffset : 0;
+
+  for (var i = startIdx; i < AGENDA.length; i++) {
     var ev = AGENDA[i];
     var d  = new Date(monday);
     d.setDate(monday.getDate() + i);
     var isToday = (d.getTime() === today.getTime());
     var isPast  = (d < today);
+    if (isPast) continue; // sauter les jours passés
+
     var cls = 'event-card';
     if (ev.important) cls += ' important';
     if (isToday)      cls += ' today';
-    if (isPast)       cls += ' past';
     var badge = isToday ? ' <span class="today-badge">Aujourd\'hui</span>' : '';
     var tags = '';
     for (var t = 0; t < ev.tags.length; t++) {
@@ -1166,10 +1172,9 @@ function buildAgendaWithEvents(customEvs) {
                     (ce.type === 'recurrent' && ce.weekday === jsDay);
         if (!match) return;
         var cToday = isToday ? ' today' : '';
-        var cPast  = isPast  ? ' past'  : '';
         var cBadge = isToday ? ' <span class="today-badge">Aujourd\'hui</span>' : '';
         html +=
-          '<div class="event-card custom' + cToday + cPast + '">' +
+          '<div class="event-card custom' + cToday + '">' +
             '<div class="event-date">' +
               '<div class="day-name">' + DAYS_FR[jsDay] + '</div>' +
               '<div class="day-num">' + pad(d.getDate()) + '</div>' +
@@ -1186,6 +1191,11 @@ function buildAgendaWithEvents(customEvs) {
           '</div>';
       });
     }
+  }
+
+  // Si tout est passé cette semaine, afficher un message
+  if (html === '') {
+    html = '<div style="text-align:center;padding:40px;color:#555;font-family:\'Share Tech Mono\',monospace;font-size:.85rem;">Semaine terminee — utilisez la navigation pour voir la semaine suivante.</div>';
   }
 
   grid.innerHTML = html;
