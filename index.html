@@ -12,8 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Death Angels">
-<!-- OneSignal Push Notifications -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -102,7 +101,25 @@ section{margin-bottom:70px}
 .event-links a{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--ember);text-decoration:none;border:1px solid rgba(231,76,60,.3);padding:4px 10px;border-radius:2px;text-align:center;transition:background .2s;white-space:nowrap}
 .event-links a:hover{background:rgba(231,76,60,.18);color:var(--white)}
 
-/* VS */
+/* AGENDA CUSTOM EVENTS */
+.event-card.custom{border-left-color:#a855f7;background:rgba(30,10,50,.85)}
+.event-card.custom:hover{border-left-color:#c084fc;background:rgba(45,15,70,.85)}
+.event-card.custom .day-num{color:#c084fc !important}
+.custom-badge{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:.12em;padding:2px 7px;border-radius:2px;background:rgba(168,85,247,.18);color:#c084fc;border:1px solid rgba(168,85,247,.5);margin-left:8px;vertical-align:middle}
+.tag-custom{background:rgba(100,0,150,.35);color:#dd99ff;border:1px solid rgba(150,0,200,.4)}
+/* Onglet agenda dans admin */
+.ap-agenda-form{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.ap-agenda-form .ap-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ap-agenda-form select{background:#1a1a1a;border:1px solid rgba(139,0,0,.4);color:var(--pale);font-family:'Rajdhani',sans-serif;font-size:.95rem;padding:8px 10px;border-radius:3px;width:100%}
+.ap-agenda-form input[type=date],.ap-agenda-form input[type=time]{background:#1a1a1a;border:1px solid rgba(139,0,0,.4);color:var(--pale);font-family:'Rajdhani',sans-serif;font-size:.95rem;padding:8px 10px;border-radius:3px;width:100%;color-scheme:dark}
+.ap-ev-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ap-ev-item{display:flex;align-items:center;justify-content:space-between;background:rgba(100,0,150,.12);border:1px solid rgba(150,0,200,.25);border-radius:3px;padding:8px 12px;gap:8px}
+.ap-ev-item .ev-lbl{font-size:.85rem;color:#dd99ff;flex:1}
+.ap-ev-item .ev-sub{font-size:.72rem;color:#888;margin-top:2px}
+.ap-ev-item button{background:rgba(139,0,0,.3);border:1px solid rgba(139,0,0,.5);color:#ff8888;font-size:.75rem;padding:3px 9px;border-radius:2px;cursor:pointer}
+.ap-radio-row{display:flex;gap:12px;align-items:center}
+.ap-radio-row label{display:flex;align-items:center;gap:6px;font-size:.9rem;cursor:pointer;color:#bbb}
+.ap-radio-row input[type=radio]{accent-color:var(--ember)}
 .vs-intro{background:linear-gradient(135deg,rgba(139,0,0,.13),rgba(13,13,13,.9));border:1px solid rgba(139,0,0,.45);border-radius:4px;padding:28px;margin-bottom:28px;position:relative;overflow:hidden}
 .vs-intro::before{content:'VS';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:'Cinzel Decorative',serif;font-size:10rem;font-weight:900;color:rgba(139,0,0,.06);line-height:1;pointer-events:none}
 .vs-intro h3{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--ember);margin-bottom:10px}
@@ -636,9 +653,57 @@ body.da-admin .ann-del-btn {display:block}
 <div id="admin-panel">
   <div class="ap-header">&#9881;&nbsp; Panneau Administrateur &mdash; Death Angels</div>
   <div class="ap-tabs">
-    <button class="ap-tab on"  onclick="daTab('pane-add')">&#43; Nouveau bloc</button>
+    <button class="ap-tab on"  onclick="daTab('pane-add')">&#43; Annonce</button>
+    <button class="ap-tab"     onclick="daTab('pane-agenda')">&#128197; Agenda</button>
     <button class="ap-tab"     onclick="daTab('pane-manage')">&#9776; Gerer</button>
     <button class="ap-tab"     onclick="daTab('pane-session')">&#128274; Session</button>
+  </div>
+
+  <!-- PANE : Agenda -->
+  <div class="ap-pane" id="pane-agenda">
+    <p style="font-size:.8rem;color:#666;margin-bottom:12px;">Ajoutez des evenements personnalises — affichage en violet dans l'agenda.</p>
+    <div class="ap-agenda-form">
+      <div class="ap-radio-row">
+        <label><input type="radio" name="ev-recur" id="ev-type-ponctuel" value="ponctuel" checked onchange="daAgendaTypeChange()"> Ponctuel (date precise)</label>
+        <label><input type="radio" name="ev-recur" id="ev-type-recurrent" value="recurrent" onchange="daAgendaTypeChange()"> Recurrent (chaque semaine)</label>
+      </div>
+      <div id="ev-date-wrap" class="ap-row">
+        <div>
+          <label style="font-size:.8rem;color:#666;display:block;margin-bottom:4px">Date</label>
+          <input type="date" id="ev-date">
+        </div>
+        <div>
+          <label style="font-size:.8rem;color:#666;display:block;margin-bottom:4px">Heure (optionnel)</label>
+          <input type="time" id="ev-time" placeholder="--:--">
+        </div>
+      </div>
+      <div id="ev-day-wrap" style="display:none">
+        <label style="font-size:.8rem;color:#666;display:block;margin-bottom:4px">Jour de la semaine</label>
+        <select id="ev-weekday">
+          <option value="1">Lundi</option>
+          <option value="2">Mardi</option>
+          <option value="3">Mercredi</option>
+          <option value="4">Jeudi</option>
+          <option value="5">Vendredi</option>
+          <option value="6">Samedi</option>
+          <option value="0">Dimanche</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.8rem;color:#666;display:block;margin-bottom:4px">Titre *</label>
+        <input type="text" id="ev-title" class="ap-input" placeholder="Ex : Reunion d'alliance">
+      </div>
+      <div>
+        <label style="font-size:.8rem;color:#666;display:block;margin-bottom:4px">Description (optionnel)</label>
+        <textarea id="ev-desc" class="ap-textarea" placeholder="Details de l'evenement..."></textarea>
+      </div>
+      <div class="ap-actions">
+        <button class="ap-btn pub" onclick="daAddEvent()">&#128197; Ajouter a l'agenda</button>
+      </div>
+    </div>
+    <hr style="border-color:rgba(150,0,200,.2);margin:16px 0">
+    <p style="font-size:.8rem;color:#666;margin-bottom:8px;">Evenements personnalises actifs :</p>
+    <div id="ap-ev-list" class="ap-ev-list"><p class="ap-no-blocs">Aucun evenement personnalise.</p></div>
   </div>
 
   <!-- PANE : Ajouter un bloc -->
@@ -903,65 +968,246 @@ function getMonday(offset) {
 }
 
 function buildAgenda() {
+  daGetEvents(function(evs) {
+    buildAgendaWithEvents(evs);
+  });
+}
+
+// ══ JSONBIN — CONFIGURATION CENTRALE ════════════════════════════════════════
+var DB_KEY        = '$2a$10$OGsZTPEgGO65oLj.X9M6V.pSC18oKKmCcMpc.OoIKlqMaCmDuJ35m';
+var DB_BASE       = 'https://api.jsonbin.io/v3/b/';
+var DB_ANNONCES   = '69b5a955c3097a1dd525a13c';
+var DB_EVENTS     = '69b5a96eb7ec241ddc6af35b';
+
+function dbGet(binId, callback) {
+  fetch(DB_BASE + binId + '/latest', { headers: { 'X-Access-Key': DB_KEY } })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ callback(null, d.record); })
+  .catch(function(e){ callback(e, null); });
+}
+
+function dbSet(binId, data, callback) {
+  fetch(DB_BASE + binId, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Access-Key': DB_KEY },
+    body: JSON.stringify(data)
+  })
+  .then(function(){ if (callback) callback(null); })
+  .catch(function(e){ if (callback) callback(e); });
+}
+
+// ── Cache annonces ────────────────────────────────────────────────────────────
+var _blocsCache = null;
+var _lastFetch  = 0;
+
+function daGetBlocs(callback) {
+  if (_blocsCache && (Date.now() - _lastFetch) < 30000) { callback(_blocsCache); return; }
+  dbGet(DB_ANNONCES, function(err, record) {
+    if (err) {
+      try { callback(JSON.parse(localStorage.getItem('da_blocs') || '{}')); } catch(e) { callback({}); }
+      return;
+    }
+    var raw = record || {};
+    var blocs = {};
+    Object.keys(raw).forEach(function(k){ if (raw[k] !== null) blocs[k] = raw[k]; });
+    _blocsCache = blocs;
+    _lastFetch  = Date.now();
+    callback(blocs);
+  });
+}
+
+function daSaveBlocs(blocs, callback) {
+  _blocsCache = blocs;
+  _lastFetch  = Date.now();
+  localStorage.setItem('da_blocs', JSON.stringify(blocs));
+  dbSet(DB_ANNONCES, blocs, function(){ if (callback) callback(); });
+}
+
+// ── Cache events ──────────────────────────────────────────────────────────────
+var _evCache  = null;
+var _evFetch  = 0;
+
+function daGetEvents(callback) {
+  if (_evCache && (Date.now() - _evFetch) < 30000) { callback(_evCache); return; }
+  dbGet(DB_EVENTS, function(err, record) {
+    if (err) {
+      try { callback(JSON.parse(localStorage.getItem('da_events') || '[]')); } catch(e) { callback([]); }
+      return;
+    }
+    // Nettoie l'entrée init {id:0} si présente
+    var evs = Array.isArray(record) ? record : (record && record.events ? record.events : []);
+    evs = evs.filter(function(e){ return e && e.id !== 0 && e.title; });
+    _evCache = evs;
+    _evFetch = Date.now();
+    callback(evs);
+  });
+}
+
+function daSaveEvents(evs, callback) {
+  _evCache = evs;
+  _evFetch = Date.now();
+  localStorage.setItem('da_events', JSON.stringify(evs));
+  dbSet(DB_EVENTS, evs, function(){ if (callback) callback(); });
+}
+
+// Toggle affichage date vs jour semaine
+function daAgendaTypeChange() {
+  var isPonctuel = document.getElementById('ev-type-ponctuel').checked;
+  document.getElementById('ev-date-wrap').style.display = isPonctuel ? '' : 'none';
+  document.getElementById('ev-day-wrap').style.display  = isPonctuel ? 'none' : '';
+}
+
+// Ajouter un événement custom
+function daAddEvent() {
+  var title = document.getElementById('ev-title').value.trim();
+  if (!title) { alert('Le titre est obligatoire.'); return; }
+  var isPonctuel = document.getElementById('ev-type-ponctuel').checked;
+  var ev = { id: Date.now(), title: title, desc: document.getElementById('ev-desc').value.trim() };
+  if (isPonctuel) {
+    var dateVal = document.getElementById('ev-date').value;
+    if (!dateVal) { alert('Choisissez une date.'); return; }
+    var timeVal = document.getElementById('ev-time').value;
+    ev.type = 'ponctuel';
+    ev.date = dateVal;        // 'YYYY-MM-DD'
+    ev.time = timeVal || '';
+  } else {
+    ev.type    = 'recurrent';
+    ev.weekday = parseInt(document.getElementById('ev-weekday').value, 10);
+    var timeVal2 = document.getElementById('ev-time') ? document.getElementById('ev-time').value : '';
+    ev.time = timeVal2 || '';
+  }
+  var btn = document.querySelector('#pane-agenda .ap-btn.pub');
+  if (btn) { btn.textContent = 'Enregistrement...'; btn.disabled = true; }
+  daGetEvents(function(evs) {
+    evs.push(ev);
+    daSaveEvents(evs, function() {
+      document.getElementById('ev-title').value = '';
+      document.getElementById('ev-desc').value  = '';
+      document.getElementById('ev-date').value  = '';
+      if (btn) { btn.textContent = '\u2705 Ajoute !'; setTimeout(function(){ btn.textContent = '\uD83D\uDCC5 Ajouter a l\'agenda'; btn.disabled = false; }, 2000); }
+      daRenderEvList(evs);
+      buildAgendaWithEvents(evs);
+    });
+  });
+}
+
+// Supprimer un event custom
+function daDeleteEvent(id) {
+  daGetEvents(function(evs) {
+    var filtered = evs.filter(function(e){ return e.id !== id; });
+    daSaveEvents(filtered, function() {
+      daRenderEvList(filtered);
+      buildAgendaWithEvents(filtered);
+    });
+  });
+}
+
+// Afficher la liste des events dans le panneau admin
+function daRenderEvList(evs) {
+  var list = document.getElementById('ap-ev-list');
+  if (!list) return;
+  if (!evs || evs.length === 0) {
+    list.innerHTML = '<p class="ap-no-blocs">Aucun evenement personnalise.</p>';
+    return;
+  }
+  var html = '';
+  evs.forEach(function(ev) {
+    var sub = ev.type === 'recurrent'
+      ? 'Chaque ' + ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][ev.weekday] + (ev.time ? ' a ' + ev.time : '')
+      : ev.date + (ev.time ? ' a ' + ev.time : '');
+    html += '<div class="ap-ev-item">' +
+      '<div><div class="ev-lbl">\uD83D\uDFE3 ' + daEsc(ev.title) + '</div>' +
+      '<div class="ev-sub">' + sub + '</div></div>' +
+      '<button onclick="daDeleteEvent(' + ev.id + ')">Supprimer</button>' +
+      '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// Construire l'agenda avec events custom intégrés
+function buildAgendaWithEvents(customEvs) {
   var grid = document.getElementById('agenda-grid');
   if (!grid) return;
   var monday = getMonday(weekOffset);
-  var today = new Date(); today.setHours(0,0,0,0);
-  var html = '';
+  var today  = new Date(); today.setHours(0,0,0,0);
+  var html   = '';
 
-  for (var i=0; i<AGENDA.length; i++) {
+  for (var i = 0; i < AGENDA.length; i++) {
     var ev = AGENDA[i];
-    var d = new Date(monday);
+    var d  = new Date(monday);
     d.setDate(monday.getDate() + i);
-
-    var isToday = (d.getTime()===today.getTime());
+    var isToday = (d.getTime() === today.getTime());
     var isPast  = (d < today);
-
     var cls = 'event-card';
     if (ev.important) cls += ' important';
     if (isToday)      cls += ' today';
     if (isPast)       cls += ' past';
-
     var badge = isToday ? ' <span class="today-badge">Aujourd\'hui</span>' : '';
-
     var tags = '';
-    for (var t=0; t<ev.tags.length; t++) {
-      tags += '<span class="event-tag '+ev.tags[t][1]+'">'+ev.tags[t][0]+'</span>';
+    for (var t = 0; t < ev.tags.length; t++) {
+      tags += '<span class="event-tag ' + ev.tags[t][1] + '">' + ev.tags[t][0] + '</span>';
     }
-
     var lnk = ev.link
-      ? '<div class="event-links"><a href="'+ev.link.url+'" target="_blank">'+ev.link.label+'</a></div>'
+      ? '<div class="event-links"><a href="' + ev.link.url + '" target="_blank">' + ev.link.label + '</a></div>'
       : '<div class="event-links"></div>';
-
     html +=
-      '<div class="'+cls+'">'+
-        '<div class="event-date">'+
-          '<div class="day-name">'+DAYS_FR[ev.jsDay]+'</div>'+
-          '<div class="day-num">'+pad(d.getDate())+'</div>'+
-          '<div class="day-month">'+MONTHS_FR[d.getMonth()]+' '+d.getFullYear()+'</div>'+
-          '<div class="server-time">'+ev.time+'</div>'+
-        '</div>'+
-        '<div class="event-info">'+
-          '<h3>'+ev.title+badge+'</h3>'+
-          '<div>'+tags+'</div>'+
-          '<p>'+ev.desc+'</p>'+
-        '</div>'+
-        lnk+
+      '<div class="' + cls + '">' +
+        '<div class="event-date">' +
+          '<div class="day-name">' + DAYS_FR[ev.jsDay] + '</div>' +
+          '<div class="day-num">' + pad(d.getDate()) + '</div>' +
+          '<div class="day-month">' + MONTHS_FR[d.getMonth()] + ' ' + d.getFullYear() + '</div>' +
+          '<div class="server-time">' + ev.time + '</div>' +
+        '</div>' +
+        '<div class="event-info">' +
+          '<h3>' + ev.title + badge + '</h3>' +
+          '<div>' + tags + '</div>' +
+          '<p>' + ev.desc + '</p>' +
+        '</div>' +
+        lnk +
       '</div>';
+
+    // Insérer les events custom qui tombent ce jour-là
+    var dayStr = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+    var jsDay  = d.getDay();
+    if (customEvs) {
+      customEvs.forEach(function(ce) {
+        var match = (ce.type === 'ponctuel' && ce.date === dayStr) ||
+                    (ce.type === 'recurrent' && ce.weekday === jsDay);
+        if (!match) return;
+        var cToday = isToday ? ' today' : '';
+        var cPast  = isPast  ? ' past'  : '';
+        var cBadge = isToday ? ' <span class="today-badge">Aujourd\'hui</span>' : '';
+        html +=
+          '<div class="event-card custom' + cToday + cPast + '">' +
+            '<div class="event-date">' +
+              '<div class="day-name">' + DAYS_FR[jsDay] + '</div>' +
+              '<div class="day-num">' + pad(d.getDate()) + '</div>' +
+              '<div class="day-month">' + MONTHS_FR[d.getMonth()] + ' ' + d.getFullYear() + '</div>' +
+              '<div class="server-time">' + (ce.time || '') + '</div>' +
+            '</div>' +
+            '<div class="event-info">' +
+              '<h3>' + daEsc(ce.title) + ' <span class="custom-badge">&#11088; Admin</span>' + cBadge + '</h3>' +
+              '<div><span class="event-tag tag-custom">Evenement personnalise</span>' +
+              (ce.type === 'recurrent' ? '<span class="event-tag tag-weekly">Recurrent</span>' : '') + '</div>' +
+              (ce.desc ? '<p>' + daEsc(ce.desc) + '</p>' : '') +
+            '</div>' +
+            '<div class="event-links"></div>' +
+          '</div>';
+      });
+    }
   }
 
   grid.innerHTML = html;
-
-  var sun = new Date(monday); sun.setDate(monday.getDate()+6);
+  var sun = new Date(monday); sun.setDate(monday.getDate() + 6);
   var lbl = document.getElementById('week-label');
   if (lbl) {
-    lbl.textContent = 'Semaine du '+monday.getDate()+' '+MONTHS_FR[monday.getMonth()]+
-      ' au '+sun.getDate()+' '+MONTHS_FR[sun.getMonth()]+' '+sun.getFullYear();
+    lbl.textContent = 'Semaine du ' + monday.getDate() + ' ' + MONTHS_FR[monday.getMonth()] +
+      ' au ' + sun.getDate() + ' ' + MONTHS_FR[sun.getMonth()] + ' ' + sun.getFullYear();
   }
   var bp = document.getElementById('btn-prev');
   var bn = document.getElementById('btn-next');
-  if (bp) bp.disabled = (weekOffset<=-4);
-  if (bn) bn.disabled = (weekOffset>=4);
+  if (bp) bp.disabled = (weekOffset <= -4);
+  if (bn) bn.disabled = (weekOffset >= 4);
 }
 
 // ══ ADMIN & ANNONCES ═════════════════════════════════════════════════════════
@@ -1022,8 +1268,6 @@ function daActivate() {
   btn.innerHTML = '\u2699\uFE0F Admin \u25CF';
   btn.classList.add('on');
   daRefreshManage();
-  // Demander la permission de notifier dès la connexion admin
-  daRequestNotifPermission();
 }
 function daTogglePanel() {
   var p = document.getElementById('admin-panel');
@@ -1033,7 +1277,7 @@ function daTogglePanel() {
 
 // ── Onglets ───────────────────────────────────────────────────────────────────
 function daTab(paneId) {
-  var panes = ['pane-add','pane-manage','pane-session'];
+  var panes = ['pane-add','pane-agenda','pane-manage','pane-session'];
   var tabs  = document.querySelectorAll('.ap-tab');
   panes.forEach(function(id,i) {
     var el = document.getElementById(id);
@@ -1041,6 +1285,7 @@ function daTab(paneId) {
     if (tabs[i]) tabs[i].classList.toggle('on', id === paneId);
   });
   if (paneId === 'pane-manage') daRefreshManage();
+  if (paneId === 'pane-agenda') daGetEvents(function(evs){ daRenderEvList(evs); });
 }
 
 // ── Selecteur de type ─────────────────────────────────────────────────────────
@@ -1050,56 +1295,6 @@ function daSelType(type) {
     var b = document.getElementById('tbt-'+t);
     if (b) b.classList.toggle('sel', t === type);
   });
-}
-
-// ── Storage blocs — JSONBin.io (partagé pour tous les visiteurs) ──────────────
-var BIN_ID  = '69b2b2b0b7ec241ddc6187d5';
-var BIN_KEY = '$2a$10$OGsZTPEgGO65oLj.X9M6V.pSC18oKKmCcMpc.OoIKlqMaCmDuJ35m';
-var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
-
-// Cache local pour éviter de re-fetcher inutilement
-var _blocsCache = null;
-var _lastFetch  = 0;
-
-function daGetBlocs(callback) {
-  // Si cache frais (moins de 30s) on l'utilise directement
-  if (_blocsCache && (Date.now() - _lastFetch) < 30000) {
-    callback(_blocsCache);
-    return;
-  }
-  fetch(BIN_URL + '/latest', {
-    headers: { 'X-Access-Key': BIN_KEY }
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    var raw = data.record || {};
-    // Nettoie les valeurs null (format initial du bin)
-    var blocs = {};
-    Object.keys(raw).forEach(function(k){ if (raw[k] !== null) blocs[k] = raw[k]; });
-    _blocsCache = blocs;
-    _lastFetch  = Date.now();
-    callback(_blocsCache);
-  })
-  .catch(function(){
-    // Fallback localStorage si JSONBin inaccessible
-    try { callback(JSON.parse(localStorage.getItem('da_blocs') || '{}')); }
-    catch(e){ callback({}); }
-  });
-}
-
-function daSaveBlocs(blocs, callback) {
-  _blocsCache = blocs;
-  _lastFetch  = Date.now();
-  // Sauvegarde locale immédiate (feedback instantané)
-  localStorage.setItem('da_blocs', JSON.stringify(blocs));
-  // Sauvegarde distante (partagée)
-  fetch(BIN_URL, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Access-Key': BIN_KEY },
-    body: JSON.stringify(blocs)
-  })
-  .then(function(){ if (callback) callback(); })
-  .catch(function(){ if (callback) callback(); });
 }
 
 // ── Publier un bloc ───────────────────────────────────────────────────────────
@@ -1118,10 +1313,6 @@ function daPublish() {
       daRenderBlocsData(blocs);
       daRefreshManageData(blocs);
       daFlash(blocs[DA_TYPE]);
-      // Push notification uniquement pour les annonces Urgentes
-      if (DA_TYPE === 'danger') {
-        daSendPush(title || '🚨 Alerte Alliance', msg || 'Nouvelle annonce urgente !');
-      }
       daTab('pane-manage');
     });
   });
@@ -1237,61 +1428,11 @@ function daFlash(bloc) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initAdmin() {
-  daRenderBlocs(); // charge depuis JSONBin et affiche
-  if (daIsAdmin()) daActivate();
-}
-
-// ══ ONESIGNAL — PUSH NOTIFICATIONS ═══════════════════════════════════════════
-var ONESIGNAL_APP_ID  = '8986f23d-7c2b-4532-bdfa-a66cedc370c4';
-var ONESIGNAL_KEY_ID  = 'ewoqctq6nu63fu42v4kmqrz6v';
-var ONESIGNAL_API_KEY = 'os_v2_app_rgdpepl4fnctfpp2uzwo3q3qyqewoqctq6nu63fu42v4kmqrz6vvsdwkxv3yfi4fyikkcj7k7x56ezex4f3xg6noaztakkhjau2km6q';
-var ONESIGNAL_SITE    = 'https://death-angels.ovh';
-
-function initOneSignal() {
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(function(OneSignal) {
-    OneSignal.init({
-      appId: ONESIGNAL_APP_ID,
-      notifyButton: { enable: false },
-      serviceWorkerParam: { scope: '/' },
-      serviceWorkerPath: 'OneSignalSDKWorker.js'
-    });
-  });
-}
-
-// Demander la permission de notifier
-function daRequestNotifPermission() {
-  if (!window.OneSignalDeferred) return;
-  OneSignalDeferred.push(function(OneSignal) {
-    OneSignal.Notifications.requestPermission();
-  });
-}
-
-// Envoyer un push via l'API v2 OneSignal
-function daSendPush(title, message) {
-  fetch('https://api.onesignal.com/notifications', {
-    method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': 'Key ' + ONESIGNAL_API_KEY
-    },
-    body: JSON.stringify({
-      app_id:            ONESIGNAL_APP_ID,
-      included_segments: ['All'],
-      headings:          { fr: '\uD83D\uDD34 ' + title, en: '\uD83D\uDD34 ' + title },
-      contents:          { fr: message, en: message },
-      url:               ONESIGNAL_SITE,
-      chrome_web_icon:   ONESIGNAL_SITE + '/icon-192.png',
-      firefox_icon:      ONESIGNAL_SITE + '/icon-192.png',
-      priority:          10
-    })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if (data.errors) console.warn('OneSignal push error:', data.errors);
-    else console.log('Push envoye a', data.recipients, 'abonnes');
-  })
-  .catch(function(e){ console.warn('Push failed:', e); });
+  daRenderBlocs();
+  if (daIsAdmin()) {
+    daActivate();
+    daGetEvents(function(evs){ daRenderEvList(evs); });
+  }
 }
 
 // ══ SERVICE WORKER (PWA) ══════════════════════════════════════════════════════
@@ -1299,8 +1440,8 @@ function daSendPush(title, message) {
   // Service Worker PWA (cache offline)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(reg) {
-        console.log('SW PWA enregistre:', reg.scope);
+      navigator.serviceWorker.register('./sw.js').then(function(reg) {
+        console.log('SW enregistre:', reg.scope);
       }).catch(function(err) {
         console.log('SW erreur:', err);
       });
@@ -1337,7 +1478,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-next').addEventListener('click', function(){ weekOffset++; buildAgenda(); });
   buildAgenda();
   convertTime();
-  initOneSignal();
   initAdmin();
 });
 </script>
