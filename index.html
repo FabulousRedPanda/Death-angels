@@ -1003,10 +1003,7 @@ var _lastFetch  = 0;
 function daGetBlocs(callback) {
   if (_blocsCache && (Date.now() - _lastFetch) < 30000) { callback(_blocsCache); return; }
   dbGet(DB_ANNONCES, function(err, record) {
-    if (err) {
-      try { callback(JSON.parse(localStorage.getItem('da_blocs') || '{}')); } catch(e) { callback({}); }
-      return;
-    }
+    if (err) { callback({}); return; }
     var raw = record || {};
     var blocs = {};
     Object.keys(raw).forEach(function(k){ if (raw[k] !== null) blocs[k] = raw[k]; });
@@ -1019,7 +1016,6 @@ function daGetBlocs(callback) {
 function daSaveBlocs(blocs, callback) {
   _blocsCache = blocs;
   _lastFetch  = Date.now();
-  localStorage.setItem('da_blocs', JSON.stringify(blocs));
   dbSet(DB_ANNONCES, blocs, function(){ if (callback) callback(); });
 }
 
@@ -1030,12 +1026,8 @@ var _evFetch  = 0;
 function daGetEvents(callback) {
   if (_evCache && (Date.now() - _evFetch) < 30000) { callback(_evCache); return; }
   dbGet(DB_EVENTS, function(err, record) {
-    if (err) {
-      try { callback(JSON.parse(localStorage.getItem('da_events') || '[]')); } catch(e) { callback([]); }
-      return;
-    }
-    // Nettoie l'entrée init {id:0} si présente
-    var evs = Array.isArray(record) ? record : (record && record.events ? record.events : []);
+    if (err) { callback([]); return; }
+    var evs = Array.isArray(record) ? record : [];
     evs = evs.filter(function(e){ return e && e.id !== 0 && e.title; });
     _evCache = evs;
     _evFetch = Date.now();
@@ -1046,7 +1038,6 @@ function daGetEvents(callback) {
 function daSaveEvents(evs, callback) {
   _evCache = evs;
   _evFetch = Date.now();
-  localStorage.setItem('da_events', JSON.stringify(evs));
   dbSet(DB_EVENTS, evs, function(){ if (callback) callback(); });
 }
 
